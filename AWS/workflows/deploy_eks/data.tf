@@ -1,3 +1,5 @@
-data "aws_eks_cluster" "cluster_endpoint" {
-    name = module.eks.cluster_endpoint
+
+
+data "aws_eks_cluster" "cluster_id" {
+    name = module.eks.cluster_id
 }
