@@ -34,7 +34,7 @@ locals {
     aws_region = "us-west-1"
     cluster_version = "1.31"
     vpc_id = "vpc-0d3c6a6e25ee6ac7f"
-    subnets = ["subnet-051442fadafbafc1c", "subnet-0773c376214a9a2e8"]
+    subnet_ids = ["subnet-051442fadafbafc1c", "subnet-0773c376214a9a2e8"]
 }
 
 module "eks" {
