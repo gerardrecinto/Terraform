@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # EKS module -- multi-account, mixed Linux/Windows node groups
 # Supports VPC CNI custom networking (100-series subnets) and OIDC IDP federation
 

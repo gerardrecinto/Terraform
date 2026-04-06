@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # SQS + SNS module with DLQ
 # Used across ExampleCorp platforms: InferenceService, DeviceService, IoT telemetry event pipelines
 

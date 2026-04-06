@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # NGINX Ingress module with NLB and TCP passthrough
 # Covers DeviceService SSH Gateway: port 22 TCP ingress for Snapdragon device SSH sessions
 # NLB used for L4 passthrough; NGINX handles TCP stream proxying

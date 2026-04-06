@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # GKE module -- private, VPC-native cluster with Workload Identity
 # Analogous to the EKS and AKS modules for AWS and Azure
 # Used as the compute layer backing Apigee and internal GCP services

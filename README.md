@@ -2,6 +2,8 @@
 
 Infrastructure-as-code across AWS, Azure, and GCP. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, Apigee, PrivateLink, observability, and logging pipelines.
 
+> **Note:** This repository is published as supporting evidence for skills listed on my resume. The code structure, patterns, and architecture reflect real work done across production environments. All company-specific values -- including account IDs, hostnames, resource names, VPC CIDRs, ARNs, and endpoint URLs -- have been replaced with generic placeholders to preserve company confidential information (CCI). The underlying infrastructure patterns, module design, and implementation approach are representative of actual production work.
+
 ## Structure
 
 ```

@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # S3 lifecycle module
 # Drives ~N PB of Telemetry log data from S3-Standard -> Standard-IA -> Glacier Deep Archive
 # Delivered $X in annual cloud cost savings across multiple regions regions

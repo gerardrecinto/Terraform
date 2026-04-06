@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # AKS module -- Azure Kubernetes Service
 # Covers IoT telemetry platform on Azure AKS (ExampleCorp Sr SWE)
 # Includes: Azure AD RBAC, ACR integration, Container Insights, NGINX ingress
