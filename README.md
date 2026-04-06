@@ -1,6 +1,6 @@
 # Terraform
 
-Infrastructure-as-code across AWS and Azure. Reusable modules and environment-specific workflows covering EKS, AKS, PrivateLink, observability, and logging pipelines.
+Infrastructure-as-code across AWS, Azure, and GCP. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, Apigee, PrivateLink, observability, and logging pipelines.
 
 ## Structure
 
@@ -26,6 +26,14 @@ Azure/
 └── workflows/
     └── deploy_aks_logging/   IoT telemetry full logging stack:
                               FluentBit (DaemonSet) -> Azure Event Hubs (Kafka) -> Logstash -> OpenSearch -> Grafana
+
+GCP/
+├── modules/
+│   ├── apigee/               Apigee X org + environment + instance; JS token auth and path routing policies; proxy bundle rendering
+│   ├── gke/                  GKE private cluster: Workload Identity, Binary Authorization, Shielded Nodes, auto-scaling pools
+│   └── gcs_lifecycle/        GCS tiering: Standard -> Nearline -> Coldline -> Archive with CMEK and versioning
+└── workflows/
+    └── deploy_apigee_proxies/ DeviceService, PackageService, and InferenceService Apigee proxy deployment with token auth JS policies and path-based routing
 ```
 
 ---
@@ -234,3 +242,126 @@ Full logging pipeline for IoT telemetry on AKS. Deploys all infrastructure and H
 | Grafana | Dashboards over OpenSearch datasource, internal LoadBalancer |
 
 See [Azure/workflows/deploy_aks_logging](Azure/workflows/deploy_aks_logging/).
+
+---
+
+## GCP Modules
+
+### `modules/apigee`
+
+Full Apigee X setup: org, environment, environment group, and instance provisioning. Renders proxy bundles from templates using Terraform's `archive_file` datasource. Each bundle includes:
+
+- **JS-ValidateToken** -- extracts the `Authorization: Bearer` header, calls a token introspection endpoint, raises a 401 if inactive or missing
+- **JS-PathRouter** -- inspects `proxy.pathsuffix` and sets `target.url` dynamically, enabling one proxy to fan out to multiple backend services
+- **SpikeArrest** -- smooths traffic bursts at 600 req/min per client IP before they reach backends
+
+```hcl
+module "apigee" {
+  source = "./GCP/modules/apigee"
+
+  project_id                = "example-platform-prod"
+  org_id                    = "example-platform-prod"
+  environment               = "prod"
+  region                    = "us-central1"
+  apigee_env_name           = "prod"
+  apigee_env_group_hostname = "api.example.com"
+  token_validation_url      = var.token_validation_url
+
+  api_proxies = {
+    inference_service = {
+      display_name       = "InferenceService API"
+      description        = "AI model inference and benchmark routing"
+      base_path          = "/inference_service/v1"
+      target_url         = "https://inference_service-internal.examplecorp.com"
+      token_auth_enabled = true
+      path_routes = {
+        "/models"    = "https://inference_service-internal.examplecorp.com/api/models"
+        "/inference" = "https://inference_service-internal.examplecorp.com/api/inference"
+      }
+    }
+  }
+}
+```
+
+---
+
+### `modules/gke`
+
+Private, VPC-native GKE cluster with:
+- Workload Identity for pod-level GCP IAM (no key files)
+- Binary Authorization (only Artifact Registry images)
+- Shielded Nodes (Secure Boot + integrity monitoring)
+- Least-privilege node service account (no default editor role)
+- Maintenance windows and auto-upgrade via REGULAR release channel
+
+```hcl
+module "gke" {
+  source = "./GCP/modules/gke"
+
+  project_id   = "example-platform-prod"
+  cluster_name = "platform-prod"
+  region       = "us-central1"
+  environment  = "prod"
+  network      = "platform-vpc"
+  subnetwork   = "platform-nodes"
+
+  node_pools = {
+    general = {
+      machine_type  = "n2-standard-4"
+      min_count     = 2
+      max_count     = 10
+      initial_count = 3
+      disk_size_gb  = 100
+      disk_type     = "pd-ssd"
+      preemptible   = false
+      spot          = false
+      labels        = { "node-type" = "general" }
+      taints        = []
+    }
+  }
+
+  master_authorized_networks = [{
+    cidr_block   = "10.0.0.0/8"
+    display_name = "internal"
+  }]
+}
+```
+
+---
+
+### `modules/gcs_lifecycle`
+
+GCS bucket with tiered storage lifecycle and CMEK, mirroring the `s3_lifecycle` module for GCP workloads:
+
+```hcl
+module "logs_bucket" {
+  source = "./GCP/modules/gcs_lifecycle"
+
+  project_id                  = "example-platform-prod"
+  bucket_name                 = "platform-logs-prod"
+  location                    = "US"
+  environment                 = "prod"
+  object_prefix               = "app-logs/"
+  transition_to_nearline_days = 30
+  transition_to_coldline_days = 90
+  transition_to_archive_days  = 365
+}
+```
+
+---
+
+## GCP Workflows
+
+### `workflows/deploy_apigee_proxies`
+
+Deploys three production Apigee proxies for DeviceService, PackageService, and InferenceService using the `apigee` module. Each proxy has token auth and path routing wired in from variables. Also provisions a GCS bucket for proxy bundle artifacts.
+
+See [GCP/workflows/deploy_apigee_proxies](GCP/workflows/deploy_apigee_proxies/).
+
+**Proxy endpoints deployed:**
+
+| Proxy | Base Path | Auth | Path Routes |
+|---|---|---|---|
+| DeviceService | `/device_service/v1` | Bearer token | `/devices`, `/ssh`, `/workspaces`, `/builds` |
+| PackageService | `/package_service/v1` | Bearer token | `/packages`, `/download`, `/catalog`, `/releases` |
+| InferenceService | `/inference_service/v1` | Bearer token | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
