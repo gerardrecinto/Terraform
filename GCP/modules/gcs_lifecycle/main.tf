@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # GCS lifecycle module -- analogous to the AWS s3_lifecycle module
 # Tiers objects from Standard -> Nearline -> Coldline -> Archive
 # Useful for log retention on GCP-side workloads

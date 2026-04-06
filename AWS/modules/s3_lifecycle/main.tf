@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # S3 lifecycle module
 # Drives ~1 PB of Axiom log data from S3-Standard -> Standard-IA -> Glacier Deep Archive
 # Delivered $2.19M in annual cloud cost savings across Oregon, Mumbai, and Frankfurt regions

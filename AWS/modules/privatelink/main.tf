@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # PrivateLink module -- cross-account endpoint service backed by NLB
 # Used for DeviceCloud SSH Gateway: NGINX TCP/SSH ingress on port 22 across account boundaries
 # Also used for MSK, SQS, and internal service connectivity in IoT telemetry

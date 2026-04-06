@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # On-prem Elasticsearch -> AWS OpenSearch migration workflow
 # Covers the ExampleCorp IT project: migrated to OpenSearch with OIDC + Azure AD + Cognito SSO
 # Uses the opensearch module for the target cluster, then drives index migration via snapshot

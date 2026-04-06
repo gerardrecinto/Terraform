@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # OpenSearch module with OIDC/Cognito SSO
 # Covers the on-prem Elasticsearch -> AWS OpenSearch migration (ExampleCorp Senior IT)
 # Auth: OIDC + Azure AD federated through Amazon Cognito

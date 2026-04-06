@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # IoT telemetry logging pipeline on Azure AKS
 # Full stack: FluentBit -> Kafka (MSK equivalent via Event Hubs) -> Logstash -> OpenSearch -> Grafana
 # Deployed via Terraform + Helm for ExampleCorp IoT telemetry platform

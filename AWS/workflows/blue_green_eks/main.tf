@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # Blue-green migration: Elastic Beanstalk -> EKS
 # This workflow reproduced the DeviceCloud zero-downtime cutover:
 #   1. EKS cluster and target group already running in parallel

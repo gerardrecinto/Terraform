@@ -1,3 +1,6 @@
+# NOTE: Published as supporting evidence for skills on resume.
+# All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
+# have been replaced with generic placeholders to preserve company CCI.
 # Apigee proxy deployment workflow
 # Deploys three API proxies: DeviceCloud, SoftwareHub (Software Center), and ModelHub
 # Each proxy uses JS policies for token validation and path-based backend routing
