@@ -115,7 +115,7 @@ module "ssh_gateway_privatelink" {
 
 ### `modules/s3_lifecycle`
 
-S3 tiering to Glacier Deep Archive. Delivered $2.19M in annual cloud cost savings on ~1 PB of Axiom log data across Oregon, Mumbai, and Frankfurt:
+S3 tiering to Glacier Deep Archive. Delivered $2.19M/month (~$26.28M/year) in cloud cost savings starting July 2024 on ~1 PB of Axiom log data across Oregon, Mumbai, and Frankfurt:
 
 ```hcl
 module "axiom_logs" {

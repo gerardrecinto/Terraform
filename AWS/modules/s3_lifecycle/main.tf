@@ -3,7 +3,7 @@
 # have been replaced with generic placeholders to preserve company CCI.
 # S3 lifecycle module
 # Drives ~1 PB of Axiom log data from S3-Standard -> Standard-IA -> Glacier Deep Archive
-# Delivered $2.19M in annual cloud cost savings across Oregon, Mumbai, and Frankfurt regions
+# Delivered $2.19M/month (~$26.28M/year) in cloud cost savings starting July 2024 across Oregon, Mumbai, and Frankfurt regions
 
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
