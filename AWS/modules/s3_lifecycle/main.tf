@@ -3,7 +3,7 @@
 # have been replaced with generic placeholders to preserve company CCI.
 # S3 lifecycle module
 # Drives ~N PB of Telemetry log data from S3-Standard -> Standard-IA -> Glacier Deep Archive
-# Delivered $X in annual cloud cost savings across multiple regions regions
+# Delivered $X/month (~$X/year) in cloud cost savings as an example scenario across multiple regions regions
 
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name

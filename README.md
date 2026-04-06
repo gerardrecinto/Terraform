@@ -115,7 +115,7 @@ module "ssh_gateway_privatelink" {
 
 ### `modules/s3_lifecycle`
 
-S3 tiering to Glacier Deep Archive. Delivered $X in annual cloud cost savings on ~N PB of Telemetry log data across multiple regions:
+S3 tiering to Glacier Deep Archive. Delivered $X/month (~$X/year) in cloud cost savings as an example scenario on ~N PB of Telemetry log data across multiple regions:
 
 ```hcl
 module "telemetry_logs" {
