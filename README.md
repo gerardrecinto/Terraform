@@ -4,6 +4,20 @@ Infrastructure-as-code across AWS, Azure, and GCP. Reusable modules and environm
 
 > **Note:** This repository is published as supporting evidence for skills listed on my resume. The code structure, patterns, and architecture reflect real work done across production environments. All company-specific values -- including account IDs, hostnames, resource names, VPC CIDRs, ARNs, and endpoint URLs -- have been replaced with generic placeholders to preserve company confidential information (CCI). The underlying infrastructure patterns, module design, and implementation approach are representative of actual production work.
 
+---
+
+## Design Principles
+
+**Separation of concerns at every layer.** Helm release versions, replica counts, and chart config live in Terraform -- not in ad-hoc `helm upgrade` commands. ConfigMaps that drive runtime behavior (TCP port routing, security headers) are Terraform resources with full audit trail and PR-based change control. Business logic lives in shared modules; environment-specific wiring lives in workflows.
+
+**Ephemeral state handled at the IaC layer.** Pod IPs, node IPs, and scaling targets are all transient in Kubernetes. Rather than fighting this with static config or custom controllers, modules use Terraform data sources to query live cluster state (`data "kubernetes_pod_v1"`) and converge AWS resources (NLB target groups) to match. Every `terraform apply` is a reconciliation loop.
+
+**Least-privilege exposure by design.** PrivateLink keeps all cross-account traffic off the public internet. Separate NLB target groups per gateway type (SSH/ADB vs device streaming) enforce protocol-level isolation -- a streaming pod is never reachable on port 22. `target_type = ip` bypasses NodePort NAT, preserves source IP, and eliminates an unnecessary network hop.
+
+**Everything version-controlled, nothing click-ops.** IAM roles, Cognito federation, Grafana alert rules, ACR cleanup tasks -- all Terraform resources. If it can't be reviewed in a PR and rolled back with a revert, it shouldn't exist in production.
+
+---
+
 ## Structure
 
 ```
@@ -13,7 +27,7 @@ AWS/
 │   ├── privatelink/          cross-account endpoint service + consumer endpoint (SSH gateway, MSK, internal APIs)
 │   ├── s3_lifecycle/         S3 tiering: Standard -> Standard-IA -> Glacier Deep Archive, KMS enforcement
 │   ├── grafana_alerting/     Grafana alert rules for ALBs (5XX, P99 latency), MSK, SQS, PrivateLink via CloudWatch
-│   ├── nginx_ingress/        NGINX Ingress on NLB with TCP passthrough for SSH (port 22) and WebSocket
+│   ├── nginx_ingress/        NGINX on NLB: TCP ConfigMap for ports 22/443, dynamic pod IP NLB target registration
 │   ├── sqs_sns/              SQS + SNS with DLQ, FIFO support, and cross-service subscription
 │   └── opensearch/           OpenSearch with Cognito/SAML SSO and Azure AD OIDC federation
 └── workflows/
@@ -94,7 +108,7 @@ module "eks" {
 
 ### `modules/privatelink`
 
-Cross-account PrivateLink for the DeviceCloud SSH Gateway (NGINX TCP/SSH ingress on port 22):
+Cross-account PrivateLink for the DeviceCloud SSH/ADB Gateway and device streaming. NLB-backed endpoint service on the provider side; VPC endpoint with Route53 alias on the consumer side. No VPC peering, no public internet exposure.
 
 ```hcl
 module "ssh_gateway_privatelink" {
@@ -115,7 +129,7 @@ module "ssh_gateway_privatelink" {
 
 ### `modules/s3_lifecycle`
 
-S3 tiering to Glacier Deep Archive. Delivered $2.19M/month (~$26.28M/year) in cloud cost savings starting July 2024 on ~1 PB of Axiom log data across Oregon, Mumbai, and Frankfurt:
+S3 tiering to Glacier Deep Archive. Delivered $2.19M/month (~$26.28M/year) in cloud cost savings starting July 2024 on ~9 PB of Axiom log data across Oregon, Mumbai, and Frankfurt:
 
 ```hcl
 module "axiom_logs" {
@@ -146,9 +160,9 @@ module "grafana_alerts" {
   grafana_auth = var.grafana_token
   environment  = "prod"
 
-  alb_arn_suffixes  = [module.alb_devicecloud.arn_suffix, module.alb_modelhub.arn_suffix]
-  alb_names         = ["devicecloud", "modelhub"]
-  alb_5xx_threshold = 10
+  alb_arn_suffixes   = [module.alb_devicecloud.arn_suffix, module.alb_modelhub.arn_suffix]
+  alb_names          = ["devicecloud", "modelhub"]
+  alb_5xx_threshold  = 10
   alb_latency_p99_ms = 2000
 
   msk_cluster_name  = "aware-iot-prod"
@@ -161,22 +175,61 @@ module "grafana_alerts" {
 
 ### `modules/nginx_ingress`
 
-NGINX on NLB with TCP passthrough for SSH and WebSocket ingress:
+NGINX on NLB for the DeviceCloud SSH/ADB gateway and device streaming. The NGINX Helm release is fully Terraform-managed -- chart version, replica count, ConfigMap references, and anti-affinity rules are all version-controlled. A dedicated TCP services ConfigMap routes port 22 (SSH/ADB) and port 443 (device streaming) to their respective Kubernetes services; changing a routing target is a one-line config PR, not a Helm upgrade.
+
+**The hard problem: ephemeral pod IPs.**
+NLB `target_type = ip` registers pod IPs directly, bypassing NodePort NAT and preserving the client source IP end-to-end (required for SSH auth). But pod IPs change on every rollout, reschedule, or node drain. A static target group silently routes to stale IPs with no obvious error. The module solves this with Terraform data sources that query the live Kubernetes API for current pod IPs and `for_each` to register each live pod as an NLB target. Every `terraform apply` re-syncs NLB targets to actual pod state.
+
+Two separate target groups scope which pods are reachable per gateway type, enforcing least-privilege at the NLB layer:
+
+| Target Group | Port | Gateway Type | Stickiness |
+|---|---|---|---|
+| `ssh_adb` | 22 | SSH into Snapdragon devices, ADB over network | None (stateless handshake) |
+| `device_streaming` | 443 | Screen copy, NetrisTV device streaming | Source IP (session must pin to pod) |
 
 ```hcl
 module "nginx" {
   source = "./AWS/modules/nginx_ingress"
 
-  cluster_name = "saga-prod"
+  cluster_name = "devicecloud-prod"
   environment  = "prod"
+  vpc_id       = var.vpc_id
   use_nlb      = true
-  nlb_internal = true
+  nlb_internal = true   # traffic enters only via PrivateLink
 
-  tcp_services = {
-    "22"   = "devicecloud/ssh-gateway:22"
-    "8883" = "aware-iot/mqtt-broker:8883"
-  }
+  # Port 22 and 443 are built into the module via the TCP ConfigMap.
+  # Add any additional TCP ports here.
+  tcp_services = {}
+
+  # SSH/ADB gateway -- pod label selector drives dynamic NLB target registration
+  ssh_gateway_namespace  = "devicecloud"
+  ssh_gateway_service    = "ssh-gateway"
+  ssh_gateway_pod_labels = { "app" = "ssh-gateway" }
+
+  # Device streaming (screen copy / NetrisTV)
+  device_streaming_namespace  = "devicecloud"
+  device_streaming_service    = "device-streaming"
+  device_streaming_pod_labels = { "app" = "device-streaming" }
+
+  # Enables dynamic pod IP registration on NLB target groups
+  dynamic_pod_targeting = true
 }
+
+# Outputs: registered pod IPs update on every apply
+output "ssh_targets"       { value = module.nginx.ssh_adb_registered_pod_ips }
+output "streaming_targets" { value = module.nginx.device_streaming_registered_pod_ips }
+```
+
+**Traffic path:**
+```
+Consumer VPC (Intel / external team)
+  └─ VPC Endpoint (PrivateLink IP)
+       └─ NLB (internal, provider VPC)
+            ├─ Target Group: ssh_adb (port 22, target_type=ip)
+            │    └─ pod IPs registered dynamically via for_each
+            └─ Target Group: device_streaming (port 443, target_type=ip)
+                 └─ pod IPs registered dynamically via for_each
+                      └─ NGINX TCP stream → SSH/ADB gateway pod | streaming pod
 ```
 
 ---
