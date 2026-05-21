@@ -138,7 +138,6 @@ module "telemetry_logs" {
   bucket_name                = "examplecorp-telemetry-logs-prod"
   environment                = "prod"
   log_prefix                 = "telemetry-logs/"
-  transition_to_ia_days      = 30
   transition_to_glacier_days = 90
   kms_key_arn                = var.kms_key_arn
   enforce_encryption_policy  = true
