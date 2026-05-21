@@ -416,6 +416,6 @@ See [GCP/workflows/deploy_apigee_proxies](GCP/workflows/deploy_apigee_proxies/).
 
 | Proxy | Base Path | Auth | Path Routes |
 |---|---|---|---|
-| DeviceCloud | `/devicecloud/v1` | Bearer token | `/devices`, `/ssh`, `/workspaces`, `/builds` |
-| SoftwareHub | `/softwarehub/v1` | Bearer token | `/packages`, `/download`, `/catalog`, `/releases` |
-| ModelHub | `/modelhub/v1` | Bearer token | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
+| DeviceCloud | `/devicecloud/v2` | Bearer token | `/devices`, `/ssh`, `/workspaces`, `/builds` |
+| SoftwareHub | `/softwarehub/v2` | Bearer token | `/packages`, `/download`, `/catalog`, `/releases` |
+| ModelHub | `/modelhub/v2` | Bearer token | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
