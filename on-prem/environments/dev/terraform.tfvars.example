@@ -1,0 +1,25 @@
+# Dev cluster — copy to terraform.tfvars and fill in before running
+
+ssh_user             = "deploy"
+ssh_private_key_path = "~/.ssh/id_ed25519"
+
+control_plane_host     = "PLACEHOLDER_DEV_CP_IP"
+control_plane_endpoint = "PLACEHOLDER_DEV_CP_IP:6443"
+
+worker_hosts = [
+  "PLACEHOLDER_DEV_WORKER_01_IP",
+  "PLACEHOLDER_DEV_WORKER_02_IP",
+]
+
+worker_node_names = [
+  "dev-worker-01",
+  "dev-worker-02",
+]
+
+kubernetes_version = "1.29"
+
+ssh_allowed_users     = ["deploy"]
+allowed_ssh_cidr      = "10.0.0.0/8"
+allowed_service_ports = [6443, 10250, 2379, 2380]
+
+deploy_user_ssh_pubkey = "PLACEHOLDER_DEPLOY_PUBKEY"

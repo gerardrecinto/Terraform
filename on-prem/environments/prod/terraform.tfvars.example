@@ -1,0 +1,30 @@
+# Prod cluster — copy to terraform.tfvars and fill in before running
+
+ssh_user             = "deploy"
+ssh_private_key_path = "~/.ssh/id_ed25519_prod"
+
+control_plane_host     = "PLACEHOLDER_PROD_CP_IP"
+control_plane_endpoint = "PLACEHOLDER_PROD_VIP:6443"
+
+worker_hosts = [
+  "PLACEHOLDER_PROD_WORKER_01_IP",
+  "PLACEHOLDER_PROD_WORKER_02_IP",
+  "PLACEHOLDER_PROD_WORKER_03_IP",
+]
+
+worker_node_names = [
+  "prod-worker-01",
+  "prod-worker-02",
+  "prod-worker-03",
+]
+
+kubernetes_version = "1.29"
+
+ssh_allowed_users     = ["deploy"]
+allowed_ssh_cidr      = "PLACEHOLDER_MGMT_CIDR"
+allowed_service_ports = [6443, 10250, 2379, 2380]
+
+deploy_user_ssh_pubkey = "PLACEHOLDER_DEPLOY_PUBKEY"
+
+audit_log_max_size_mb = 100
+audit_log_max_files   = 10
