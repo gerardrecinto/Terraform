@@ -1,0 +1,28 @@
+# Local state — never commit real state
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Variables files with secrets — commit .tfvars.example instead
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Terraform working directory
+.terraform/
+.terraform.lock.hcl
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Credentials
+.aws/
+*.pem
+*.key
