@@ -416,6 +416,6 @@ See [GCP/workflows/deploy_apigee_proxies](GCP/workflows/deploy_apigee_proxies/).
 
 | Proxy | Base Path | Auth | Path Routes |
 |---|---|---|---|
-| DeviceService | `/device_service/v1` | Bearer token | `/devices`, `/ssh`, `/workspaces`, `/builds` |
-| PackageService | `/package_service/v1` | Bearer token | `/packages`, `/download`, `/catalog`, `/releases` |
-| InferenceService | `/inference_service/v1` | Bearer token | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
+| DeviceService | `/device_service/v2` | Bearer token | `/devices`, `/ssh`, `/workspaces`, `/builds` |
+| PackageService | `/package_service/v2` | Bearer token | `/packages`, `/download`, `/catalog`, `/releases` |
+| InferenceService | `/inference_service/v2` | Bearer token | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
