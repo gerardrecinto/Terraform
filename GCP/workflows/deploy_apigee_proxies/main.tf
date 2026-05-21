@@ -44,7 +44,7 @@ module "apigee" {
     device_service = {
       display_name       = "DeviceService API"
       description        = "ExampleCorp Developer Cloud API proxy -- token auth, path routing to device management and SSH gateway services"
-      base_path          = "/device_service/v1"
+      base_path          = "/device_service/v2"
       target_url         = "https://${var.device_service_backend_host}"
       token_auth_enabled = true
       path_routes = {
@@ -60,7 +60,7 @@ module "apigee" {
     package_service = {
       display_name       = "PackageService Software Center API"
       description        = "Software Center API proxy -- validates customer tokens and routes to package delivery service (Flask pre-signed URL generator)"
-      base_path          = "/package_service/v1"
+      base_path          = "/package_service/v2"
       target_url         = "https://${var.package_service_backend_host}"
       token_auth_enabled = true
       path_routes = {
@@ -76,7 +76,7 @@ module "apigee" {
     inference_service = {
       display_name       = "InferenceService API"
       description        = "ExampleCorp AI Hub API proxy -- model inference, deployment, and benchmark routing with token auth"
-      base_path          = "/inference_service/v1"
+      base_path          = "/inference_service/v2"
       target_url         = "https://${var.inference_service_backend_host}"
       token_auth_enabled = true
       path_routes = {
