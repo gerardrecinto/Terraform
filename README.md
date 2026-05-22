@@ -1,4 +1,4 @@
-![demo](docs/assets/demo.gif)
+![demo](docs/assets/demo2.gif)
 
 # Terraform
 
