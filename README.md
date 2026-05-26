@@ -1,6 +1,6 @@
-![demo](docs/assets/demo2.gif)
-
 # Terraform
+
+![Terraform Platform IaC logo](docs/assets/logo.svg)
 
 Infrastructure-as-code across on-premises, AWS, Azure, and GCP. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, Apigee, PrivateLink, S3 tiering, observability, and logging pipelines.
 
@@ -11,6 +11,10 @@ The S3 lifecycle module alone delivered **$26.28M/year in cost savings** by tier
 ![Azure](https://img.shields.io/badge/Azure-AKS%20%7C%20ACR-0089D6?logo=microsoft-azure&logoColor=white)
 ![GCP](https://img.shields.io/badge/GCP-GKE%20%7C%20Apigee%20X-4285F4?logo=google-cloud&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
+
+![demo](docs/assets/demo.gif)
+
+Commercial angle and consulting hooks: [docs/go-to-market.md](docs/go-to-market.md).
 
 > **Note:** All company-specific values (account IDs, hostnames, ARNs, VPC CIDRs) are replaced with generic placeholders. The module design and implementation reflect actual production work.
 
