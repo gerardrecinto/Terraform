@@ -74,8 +74,8 @@ resource "aws_opensearch_domain" "this" {
           entity_id        = "https://sts.windows.net/${var.saml_master_backend_role}/"
           metadata_content = var.saml_metadata_content
         }
-        master_backend_role = var.saml_master_backend_role
-        roles_key           = "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups"
+        master_backend_role     = var.saml_master_backend_role
+        roles_key               = "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups"
         session_timeout_minutes = 60
       }
     }

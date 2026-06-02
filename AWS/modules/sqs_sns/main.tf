@@ -13,7 +13,7 @@ locals {
 resource "aws_sqs_queue" "dlq" {
   name                      = local.dlq_name
   fifo_queue                = var.fifo
-  message_retention_seconds = 1209600  # 14 days for DLQ -- long enough to investigate
+  message_retention_seconds = 1209600 # 14 days for DLQ -- long enough to investigate
   kms_master_key_id         = var.kms_key_arn != "" ? var.kms_key_arn : null
 
   tags = merge(var.tags, {

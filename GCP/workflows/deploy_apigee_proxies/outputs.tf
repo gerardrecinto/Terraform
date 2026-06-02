@@ -12,9 +12,9 @@ output "deployed_proxies" {
 
 output "proxy_endpoints" {
   value = {
-    devicecloud   = "https://${var.api_hostname}/devicecloud/v1"
-    softwarehub   = "https://${var.api_hostname}/softwarehub/v1"
-    modelhub = "https://${var.api_hostname}/modelhub/v1"
+    devicecloud = "https://${var.api_hostname}/devicecloud/v1"
+    softwarehub = "https://${var.api_hostname}/softwarehub/v1"
+    modelhub    = "https://${var.api_hostname}/modelhub/v1"
   }
 }
 

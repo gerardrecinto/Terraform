@@ -51,7 +51,7 @@ resource "aws_lb_listener_rule" "weighted" {
     forward {
       target_group {
         arn    = data.aws_lb_target_group.eks.arn
-        weight = var.eks_traffic_weight  # 0 -> 10 -> 50 -> 100 during migration
+        weight = var.eks_traffic_weight # 0 -> 10 -> 50 -> 100 during migration
       }
       target_group {
         arn    = data.aws_lb_target_group.beanstalk.arn
@@ -87,9 +87,9 @@ resource "kubernetes_manifest" "tgb" {
         name = local.service_name
         port = 8080
       }
-      targetGroupARN    = data.aws_lb_target_group.eks.arn
-      targetType        = "ip"
-      vpcID             = var.vpc_id
+      targetGroupARN = data.aws_lb_target_group.eks.arn
+      targetType     = "ip"
+      vpcID          = var.vpc_id
     }
   }
 }
