@@ -64,10 +64,10 @@ module "apigee" {
       target_url         = "https://${var.package_service_backend_host}"
       token_auth_enabled = true
       path_routes = {
-        "/packages"  = "https://${var.package_service_backend_host}/api/packages"
-        "/download"  = "https://${var.package_service_backend_host}/api/presigned"
-        "/catalog"   = "https://${var.package_service_backend_host}/api/catalog"
-        "/releases"  = "https://${var.package_service_backend_host}/api/releases"
+        "/packages" = "https://${var.package_service_backend_host}/api/packages"
+        "/download" = "https://${var.package_service_backend_host}/api/presigned"
+        "/catalog"  = "https://${var.package_service_backend_host}/api/catalog"
+        "/releases" = "https://${var.package_service_backend_host}/api/releases"
       }
     }
 

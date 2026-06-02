@@ -26,7 +26,7 @@ resource "aws_vpc_endpoint" "this" {
   vpc_endpoint_type   = "Interface"
   subnet_ids          = var.subnet_ids
   security_group_ids  = [aws_security_group.endpoint.id]
-  private_dns_enabled = false  # manage DNS via Route53 alias records
+  private_dns_enabled = false # manage DNS via Route53 alias records
 
   tags = merge(var.tags, {
     Name        = "${var.service_name}-endpoint"

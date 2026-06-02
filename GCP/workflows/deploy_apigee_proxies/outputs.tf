@@ -12,9 +12,9 @@ output "deployed_proxies" {
 
 output "proxy_endpoints" {
   value = {
-    device_service   = "https://${var.api_hostname}/device_service/v1"
-    package_service   = "https://${var.api_hostname}/package_service/v1"
-    inference_service = "https://${var.api_hostname}/inference_service/v1"
+    device_service = "https://${var.api_hostname}/device_service/v1"
+    package_service = "https://${var.api_hostname}/package_service/v1"
+    inference_service    = "https://${var.api_hostname}/inference_service/v1"
   }
 }
 

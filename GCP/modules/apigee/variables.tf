@@ -31,10 +31,10 @@ variable "apigee_env_group_hostname" {
 variable "api_proxies" {
   description = "Map of proxy name to its config"
   type = map(object({
-    display_name  = string
-    description   = string
-    base_path     = string
-    target_url    = string
+    display_name = string
+    description  = string
+    base_path    = string
+    target_url   = string
     # token_auth: validates Bearer token via JS policy before forwarding
     token_auth_enabled = bool
     # path_routing: map of path prefix -> backend URL override

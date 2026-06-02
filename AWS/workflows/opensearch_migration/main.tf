@@ -34,9 +34,9 @@ module "opensearch" {
 
 locals {
   tags = {
-    Environment = var.environment
-    Project     = var.domain_name
-    Terraform   = "true"
+    Environment  = var.environment
+    Project      = var.domain_name
+    Terraform    = "true"
     MigratedFrom = "on-prem-elasticsearch"
   }
 }
@@ -118,11 +118,11 @@ resource "aws_cognito_identity_provider" "azure_ad" {
   provider_type = "OIDC"
 
   provider_details = {
-    client_id                = var.azure_ad_client_id
-    client_secret            = var.azure_ad_client_secret
+    client_id                 = var.azure_ad_client_id
+    client_secret             = var.azure_ad_client_secret
     attributes_request_method = "GET"
-    oidc_issuer              = "https://login.microsoftonline.com/${var.azure_tenant_id}/v2.0"
-    authorize_scopes         = "openid email profile"
+    oidc_issuer               = "https://login.microsoftonline.com/${var.azure_tenant_id}/v2.0"
+    authorize_scopes          = "openid email profile"
   }
 
   attribute_mapping = {

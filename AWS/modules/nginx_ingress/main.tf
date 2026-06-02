@@ -292,7 +292,7 @@ resource "aws_lb_target_group_attachment" "ssh_adb_pods" {
   for_each = var.dynamic_pod_targeting ? {
     for pod in try(data.kubernetes_pod_v1.ssh_adb_pods[0].metadata, []) :
     pod.name => pod
-    if try(pod.status[0].pod_ip, "") != ""   # exclude Pending/Terminating pods
+    if try(pod.status[0].pod_ip, "") != "" # exclude Pending/Terminating pods
   } : {}
 
   target_group_arn  = aws_lb_target_group.ssh_adb[0].arn

@@ -2,7 +2,7 @@
 # All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
 # have been replaced with generic placeholders to preserve company CCI.
 # AKS module -- Azure Kubernetes Service
-# Covers IoT telemetry platform on Azure AKS (ExampleCorp Sr SWE)
+# Covers IoT telemetry platform on Azure AKS (ExampleCorp platform engineering)
 # Includes: Azure AD RBAC, ACR integration, Container Insights, NGINX ingress
 
 terraform {
@@ -23,14 +23,14 @@ resource "azurerm_kubernetes_cluster" "this" {
 
   # System node pool -- separate from workload pools for stability
   default_node_pool {
-    name                = "system"
-    node_count          = var.system_node_count
-    vm_size             = var.system_vm_size
-    vnet_subnet_id      = var.vnet_subnet_id
-    os_disk_size_gb     = 128
-    os_disk_type        = "Managed"
-    type                = "VirtualMachineScaleSets"
-    only_critical_addons_enabled = true  # taint system pool for system pods only
+    name                         = "system"
+    node_count                   = var.system_node_count
+    vm_size                      = var.system_vm_size
+    vnet_subnet_id               = var.vnet_subnet_id
+    os_disk_size_gb              = 128
+    os_disk_type                 = "Managed"
+    type                         = "VirtualMachineScaleSets"
+    only_critical_addons_enabled = true # taint system pool for system pods only
 
     upgrade_settings {
       max_surge = "33%"
@@ -71,14 +71,14 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   # Workload identity for pod-level Azure AD auth (replaces aad-pod-identity)
-  workload_identity_enabled         = true
-  oidc_issuer_enabled               = true
+  workload_identity_enabled = true
+  oidc_issuer_enabled       = true
 
   auto_scaler_profile {
-    balance_similar_node_groups  = true
-    expander                     = "least-waste"
-    scale_down_delay_after_add   = "10m"
-    scale_down_unneeded          = "10m"
+    balance_similar_node_groups = true
+    expander                    = "least-waste"
+    scale_down_delay_after_add  = "10m"
+    scale_down_unneeded         = "10m"
   }
 
   tags = merge(var.tags, {

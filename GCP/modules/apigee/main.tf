@@ -75,10 +75,10 @@ resource "google_apigee_organization" "this" {
 
 # Apigee environment (dev / stage / prod)
 resource "google_apigee_environment" "this" {
-  name        = var.apigee_env_name
-  description = "${var.environment} environment"
+  name         = var.apigee_env_name
+  description  = "${var.environment} environment"
   display_name = title(var.environment)
-  org_id      = google_apigee_organization.this.id
+  org_id       = google_apigee_organization.this.id
 }
 
 # Environment group (maps hostname -> environment)
@@ -114,8 +114,8 @@ resource "google_apigee_instance_attachment" "this" {
 resource "google_apigee_api" "proxies" {
   for_each = var.api_proxies
 
-  org_id       = google_apigee_organization.this.id
-  name         = each.key
+  org_id        = google_apigee_organization.this.id
+  name          = each.key
   config_bundle = data.archive_file.proxy_bundle[each.key].output_path
 }
 
@@ -129,7 +129,7 @@ data "archive_file" "proxy_bundle" {
   # ProxyEndpoint: defines base path, route rules, and request/response flows
   source {
     filename = "apiproxy/proxies/default.xml"
-    content  = templatefile("${path.module}/templates/proxy_endpoint.xml.tpl", {
+    content = templatefile("${path.module}/templates/proxy_endpoint.xml.tpl", {
       proxy_name  = each.key
       base_path   = each.value.base_path
       target_name = "default"
@@ -140,7 +140,7 @@ data "archive_file" "proxy_bundle" {
   # TargetEndpoint: backend URL
   source {
     filename = "apiproxy/targets/default.xml"
-    content  = templatefile("${path.module}/templates/target_endpoint.xml.tpl", {
+    content = templatefile("${path.module}/templates/target_endpoint.xml.tpl", {
       target_url = each.value.target_url
     })
   }
@@ -148,7 +148,7 @@ data "archive_file" "proxy_bundle" {
   # API proxy descriptor
   source {
     filename = "apiproxy/${each.key}.xml"
-    content  = templatefile("${path.module}/templates/api_proxy.xml.tpl", {
+    content = templatefile("${path.module}/templates/api_proxy.xml.tpl", {
       proxy_name   = each.key
       display_name = each.value.display_name
       description  = each.value.description
@@ -159,14 +159,14 @@ data "archive_file" "proxy_bundle" {
   # JS policy: token validation (Bearer token -> token introspection endpoint)
   source {
     filename = "apiproxy/policies/JS-ValidateToken.xml"
-    content  = templatefile("${path.module}/templates/js_validate_token_policy.xml.tpl", {
+    content = templatefile("${path.module}/templates/js_validate_token_policy.xml.tpl", {
       enabled = each.value.token_auth_enabled
     })
   }
 
   source {
     filename = "apiproxy/resources/jsc/validateToken.js"
-    content  = templatefile("${path.module}/templates/validateToken.js.tpl", {
+    content = templatefile("${path.module}/templates/validateToken.js.tpl", {
       token_validation_url = var.token_validation_url
     })
   }
@@ -179,7 +179,7 @@ data "archive_file" "proxy_bundle" {
 
   source {
     filename = "apiproxy/resources/jsc/pathRouter.js"
-    content  = templatefile("${path.module}/templates/pathRouter.js.tpl", {
+    content = templatefile("${path.module}/templates/pathRouter.js.tpl", {
       path_routes = each.value.path_routes
     })
   }
@@ -195,10 +195,10 @@ data "archive_file" "proxy_bundle" {
 resource "google_apigee_api_deployment" "proxies" {
   for_each = var.api_proxies
 
-  org_id       = google_apigee_organization.this.id
-  api_id       = google_apigee_api.proxies[each.key].name
-  environment  = google_apigee_environment.this.name
-  revision     = google_apigee_api.proxies[each.key].latest_revision_id
+  org_id      = google_apigee_organization.this.id
+  api_id      = google_apigee_api.proxies[each.key].name
+  environment = google_apigee_environment.this.name
+  revision    = google_apigee_api.proxies[each.key].latest_revision_id
 
   depends_on = [google_apigee_instance_attachment.this]
 }
