@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  terraform-validate:
+    name: Validate Terraform modules
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.x"
+
+      - name: Check formatting
+        run: |
+          find . -name '*.tf' -not -path '*/.terraform/*' | xargs -I{} dirname {} | sort -u | while read dir; do
+            terraform fmt -check -diff "$dir" || { echo "Format error in $dir"; exit 1; }
+          done
+
+      - name: Validate AWS modules
+        run: |
+          for mod in AWS/modules/*/; do
+            echo "Validating $mod..."
+            cd "$mod"
+            terraform init -backend=false -input=false -no-color
+            terraform validate -no-color
+            cd - > /dev/null
+          done
+
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -rn --include='*.tf' -E '(aws_access_key_id|aws_secret_access_key|password\s*=\s*"[^"]{8,}")' .; then
+            echo 'ERROR: Potential hardcoded credentials found'
+            exit 1
+          fi
+          echo 'No hardcoded credentials detected'

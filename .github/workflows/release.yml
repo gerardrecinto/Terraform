@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Package and release modules
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package modules
+        run: |
+          zip -r terraform-infra-blueprints-${{ github.ref_name }}.zip \
+            AWS/modules/ Azure/ GCP/ on-prem/ \
+            --exclude '*.tfstate' --exclude '*.tfstate.backup' --exclude '.terraform/*'
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: terraform-infra-blueprints-${{ github.ref_name }}.zip
+          generate_release_notes: true
