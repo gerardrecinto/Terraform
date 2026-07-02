@@ -31,7 +31,7 @@ resource "grafana_data_source" "cloudwatch" {
 
   json_data_encoded = jsonencode({
     defaultRegion = var.aws_region
-    authType      = "default"  # uses instance profile / IRSA
+    authType      = "default" # uses instance profile / IRSA
   })
 }
 
@@ -77,26 +77,32 @@ resource "grafana_rule_group" "alb" {
       data {
         ref_id         = "A"
         datasource_uid = grafana_data_source.cloudwatch.uid
-        relative_time_range { from = 300; to = 0 }
+        relative_time_range {
+          from = 300
+          to   = 0
+        }
         model = jsonencode({
-          dimensions       = { LoadBalancer = var.alb_arn_suffixes[rule.value] }
-          expression       = ""
-          highResolution   = false
-          id               = ""
-          matchExact       = true
-          metricName       = "HTTPCode_Target_5XX_Count"
-          namespace        = "AWS/ApplicationELB"
-          period           = "60"
-          refId            = "A"
-          region           = var.aws_region
-          statistic        = "Sum"
+          dimensions     = { LoadBalancer = var.alb_arn_suffixes[rule.value] }
+          expression     = ""
+          highResolution = false
+          id             = ""
+          matchExact     = true
+          metricName     = "HTTPCode_Target_5XX_Count"
+          namespace      = "AWS/ApplicationELB"
+          period         = "60"
+          refId          = "A"
+          region         = var.aws_region
+          statistic      = "Sum"
         })
       }
 
       data {
         ref_id         = "C"
         datasource_uid = "__expr__"
-        relative_time_range { from = 0; to = 0 }
+        relative_time_range {
+          from = 0
+          to   = 0
+        }
         model = jsonencode({
           conditions = [{
             evaluator = { params = [var.alb_5xx_threshold], type = "gt" }
@@ -134,22 +140,28 @@ resource "grafana_rule_group" "alb" {
       data {
         ref_id         = "A"
         datasource_uid = grafana_data_source.cloudwatch.uid
-        relative_time_range { from = 300; to = 0 }
+        relative_time_range {
+          from = 300
+          to   = 0
+        }
         model = jsonencode({
-          dimensions    = { LoadBalancer = var.alb_arn_suffixes[rule.value] }
-          metricName    = "TargetResponseTime"
-          namespace     = "AWS/ApplicationELB"
-          period        = "60"
-          refId         = "A"
-          region        = var.aws_region
-          statistic     = "p99"
+          dimensions = { LoadBalancer = var.alb_arn_suffixes[rule.value] }
+          metricName = "TargetResponseTime"
+          namespace  = "AWS/ApplicationELB"
+          period     = "60"
+          refId      = "A"
+          region     = var.aws_region
+          statistic  = "p99"
         })
       }
 
       data {
         ref_id         = "C"
         datasource_uid = "__expr__"
-        relative_time_range { from = 0; to = 0 }
+        relative_time_range {
+          from = 0
+          to   = 0
+        }
         model = jsonencode({
           conditions = [{
             evaluator = { params = [var.alb_latency_p99_ms / 1000.0], type = "gt" }
@@ -194,7 +206,10 @@ resource "grafana_rule_group" "sqs" {
       data {
         ref_id         = "A"
         datasource_uid = grafana_data_source.cloudwatch.uid
-        relative_time_range { from = 300; to = 0 }
+        relative_time_range {
+          from = 300
+          to   = 0
+        }
         model = jsonencode({
           dimensions = { QueueName = rule.value }
           metricName = "ApproximateAgeOfOldestMessage"
@@ -209,7 +224,10 @@ resource "grafana_rule_group" "sqs" {
       data {
         ref_id         = "C"
         datasource_uid = "__expr__"
-        relative_time_range { from = 0; to = 0 }
+        relative_time_range {
+          from = 0
+          to   = 0
+        }
         model = jsonencode({
           conditions = [{
             evaluator = { params = [var.sqs_message_age_seconds], type = "gt" }
@@ -252,7 +270,10 @@ resource "grafana_rule_group" "msk" {
     data {
       ref_id         = "A"
       datasource_uid = grafana_data_source.cloudwatch.uid
-      relative_time_range { from = 300; to = 0 }
+      relative_time_range {
+        from = 300
+        to   = 0
+      }
       model = jsonencode({
         dimensions = { "Cluster Name" = var.msk_cluster_name }
         metricName = "UnderReplicatedPartitions"
@@ -267,7 +288,10 @@ resource "grafana_rule_group" "msk" {
     data {
       ref_id         = "C"
       datasource_uid = "__expr__"
-      relative_time_range { from = 0; to = 0 }
+      relative_time_range {
+        from = 0
+        to   = 0
+      }
       model = jsonencode({
         conditions = [{
           evaluator = { params = [0], type = "gt" }

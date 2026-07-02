@@ -111,5 +111,5 @@ resource "google_storage_bucket" "this" {
 resource "google_storage_bucket_iam_binding" "deny_public" {
   bucket  = google_storage_bucket.this.name
   role    = "roles/storage.objectViewer"
-  members = []  # empty = no public viewers
+  members = [] # empty = no public viewers
 }

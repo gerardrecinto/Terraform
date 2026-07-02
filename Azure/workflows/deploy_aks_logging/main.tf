@@ -270,12 +270,12 @@ resource "helm_release" "opensearch" {
   namespace  = kubernetes_namespace.logging.metadata[0].name
 
   values = [yamlencode({
-    replicas      = 2
+    replicas           = 2
     minimumMasterNodes = 1
 
     resources = {
       requests = { cpu = "500m", memory = "2Gi" }
-      limits   = { cpu = "2",    memory = "4Gi" }
+      limits   = { cpu = "2", memory = "4Gi" }
     }
 
     persistence = {
@@ -284,7 +284,7 @@ resource "helm_release" "opensearch" {
       storageClass = "managed-premium"
     }
 
-    tolerations = [{ key = "workload", value = "logging", effect = "NoSchedule" }]
+    tolerations  = [{ key = "workload", value = "logging", effect = "NoSchedule" }]
     nodeSelector = { "workload" = "logging" }
 
     config = {
@@ -313,10 +313,10 @@ resource "helm_release" "logstash" {
 
     resources = {
       requests = { cpu = "500m", memory = "1Gi" }
-      limits   = { cpu = "2",    memory = "2Gi" }
+      limits   = { cpu = "2", memory = "2Gi" }
     }
 
-    tolerations = [{ key = "workload", value = "logging", effect = "NoSchedule" }]
+    tolerations  = [{ key = "workload", value = "logging", effect = "NoSchedule" }]
     nodeSelector = { "workload" = "logging" }
 
     logstashConfig = {
@@ -359,7 +359,7 @@ resource "helm_release" "logstash" {
         output {
           opensearch {
             hosts => ["opensearch-cluster-master.logging.svc.cluster.local:9200"]
-            index => "iot-platform-logs-%{+YYYY.MM.dd}"
+            index => "iot-platform-logs-%%{+YYYY.MM.dd}"
             user => "admin"
             password => "$${OPENSEARCH_PASSWORD}"
             ssl => false
@@ -370,11 +370,11 @@ resource "helm_release" "logstash" {
 
     extraEnvs = [
       {
-        name = "KAFKA_BROKERS"
+        name      = "KAFKA_BROKERS"
         valueFrom = { secretKeyRef = { name = "eventhub-creds", key = "bootstrap_servers" } }
       },
       {
-        name = "KAFKA_CONSUMER_PASSWORD"
+        name      = "KAFKA_CONSUMER_PASSWORD"
         valueFrom = { secretKeyRef = { name = "eventhub-creds", key = "consumer_connection_string" } }
       }
     ]
@@ -410,8 +410,8 @@ resource "helm_release" "grafana" {
           access    = "proxy"
           isDefault = true
           jsonData = {
-            version     = "2.x"
-            timeField   = "@timestamp"
+            version   = "2.x"
+            timeField = "@timestamp"
           }
         }]
       }
@@ -424,7 +424,7 @@ resource "helm_release" "grafana" {
       }
     }
 
-    tolerations = [{ key = "workload", value = "logging", effect = "NoSchedule" }]
+    tolerations  = [{ key = "workload", value = "logging", effect = "NoSchedule" }]
     nodeSelector = { "workload" = "logging" }
   })]
 

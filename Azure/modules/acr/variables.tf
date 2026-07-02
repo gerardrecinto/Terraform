@@ -17,7 +17,7 @@ variable "environment" {
 
 variable "sku" {
   type    = string
-  default = "Premium"  # Premium required for geo-replication and network rules
+  default = "Premium" # Premium required for geo-replication and network rules
 }
 
 variable "geo_replication_locations" {

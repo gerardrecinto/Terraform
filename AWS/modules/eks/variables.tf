@@ -38,7 +38,7 @@ variable "cni_custom_networking_enabled" {
 
 variable "eni_config_subnets" {
   description = "Secondary subnets for VPC CNI eniconfigs (100.x.x.x range)"
-  type        = map(string)  # az -> subnet_id
+  type        = map(string) # az -> subnet_id
   default     = {}
 }
 
@@ -48,7 +48,7 @@ variable "linux_node_groups" {
     min_size       = number
     max_size       = number
     desired_size   = number
-    capacity_type  = string  # ON_DEMAND or SPOT
+    capacity_type  = string # ON_DEMAND or SPOT
     labels         = map(string)
     taints         = list(object({ key = string, value = string, effect = string }))
   }))

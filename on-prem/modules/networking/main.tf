@@ -124,9 +124,9 @@ resource "kubernetes_config_map_v1_data" "coredns_custom" {
 
   data = {
     Corefile = templatefile("${path.module}/templates/Corefile.tpl", {
-      upstream_dns    = var.upstream_dns_servers
-      search_domains  = var.internal_search_domains
-      cluster_domain  = var.cluster_domain
+      upstream_dns   = var.upstream_dns_servers
+      search_domains = var.internal_search_domains
+      cluster_domain = var.cluster_domain
     })
   }
 

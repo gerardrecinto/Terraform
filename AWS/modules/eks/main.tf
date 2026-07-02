@@ -14,7 +14,7 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.subnet_ids
 
-  cluster_endpoint_public_access = false  # internal only; front with PrivateLink or VPN
+  cluster_endpoint_public_access = false # internal only; front with PrivateLink or VPN
 
   enable_cluster_creator_admin_permissions = true
 
@@ -29,7 +29,7 @@ module "eks" {
       most_recent = true
     }
     vpc-cni = {
-      most_recent    = true
+      most_recent = true
       # Enable custom networking so pods use 100-series subnets, not primary node subnet
       configuration_values = jsonencode({
         env = {
@@ -56,7 +56,7 @@ module "eks" {
       labels         = cfg.labels
       taints         = cfg.taints
       tags           = var.tags
-    }},
+    } },
     { for name, cfg in var.windows_node_groups : "win-${name}" => {
       ami_type       = "WINDOWS_CORE_2022_x86_64"
       instance_types = cfg.instance_types
@@ -66,7 +66,7 @@ module "eks" {
       desired_size   = cfg.desired_size
       # Windows nodes need specific labels for scheduling
       labels = {
-        "kubernetes.io/os" = "windows"
+        "kubernetes.io/os"                 = "windows"
         "node.kubernetes.io/windows-build" = "10.0.20348"
       }
       taints = [{
@@ -75,7 +75,7 @@ module "eks" {
         effect = "NO_SCHEDULE"
       }]
       tags = var.tags
-    }}
+    } }
   )
 
   tags = merge(var.tags, {
@@ -92,11 +92,11 @@ resource "kubernetes_manifest" "eni_config" {
     apiVersion = "crd.k8s.amazonaws.com/v1alpha1"
     kind       = "ENIConfig"
     metadata = {
-      name = each.key  # AZ name, matched by ENI_CONFIG_LABEL_DEF label
+      name = each.key # AZ name, matched by ENI_CONFIG_LABEL_DEF label
     }
     spec = {
-      subnet          = each.value
-      securityGroups  = [module.eks.node_security_group_id]
+      subnet         = each.value
+      securityGroups = [module.eks.node_security_group_id]
     }
   }
 

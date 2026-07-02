@@ -61,7 +61,7 @@ resource "google_container_cluster" "this" {
 
   private_cluster_config {
     enable_private_nodes    = var.private_cluster
-    enable_private_endpoint = false  # keep master endpoint accessible from authorized networks
+    enable_private_endpoint = false # keep master endpoint accessible from authorized networks
     master_ipv4_cidr_block  = var.master_ipv4_cidr_block
   }
 

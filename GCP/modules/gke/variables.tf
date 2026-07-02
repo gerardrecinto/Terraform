@@ -42,15 +42,15 @@ variable "services_range_name" {
 
 variable "node_pools" {
   type = map(object({
-    machine_type   = string
-    min_count      = number
-    max_count      = number
-    initial_count  = number
-    disk_size_gb   = number
-    disk_type      = string
-    preemptible    = bool
-    spot           = bool
-    labels         = map(string)
+    machine_type  = string
+    min_count     = number
+    max_count     = number
+    initial_count = number
+    disk_size_gb  = number
+    disk_type     = string
+    preemptible   = bool
+    spot          = bool
+    labels        = map(string)
     taints = list(object({
       key    = string
       value  = string

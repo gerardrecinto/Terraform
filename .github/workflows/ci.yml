@@ -23,9 +23,9 @@ jobs:
             terraform fmt -check -diff "$dir" || { echo "Format error in $dir"; exit 1; }
           done
 
-      - name: Validate AWS modules
+      - name: Validate modules
         run: |
-          for mod in AWS/modules/*/; do
+          for mod in AWS/modules/*/ Azure/modules/*/ GCP/modules/*/ on-prem/modules/*/; do
             echo "Validating $mod..."
             cd "$mod"
             terraform init -backend=false -input=false -no-color
@@ -40,3 +40,8 @@ jobs:
             exit 1
           fi
           echo 'No hardcoded credentials detected'
+
+      - name: tfsec security scan
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          soft_fail: false

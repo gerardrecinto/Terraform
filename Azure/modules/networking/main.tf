@@ -116,8 +116,8 @@ resource "azurerm_firewall_policy_rule_collection_group" "base" {
     action   = "Allow"
 
     rule {
-      name             = "package-registries"
-      source_addresses = [for s in var.spokes : s.address_space]
+      name              = "package-registries"
+      source_addresses  = [for s in var.spokes : s.address_space]
       destination_fqdns = ["*.ubuntu.com", "packages.microsoft.com", "*.docker.io", "mcr.microsoft.com"]
       protocols {
         type = "Https"
