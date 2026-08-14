@@ -22,13 +22,13 @@ Commercial angle and consulting hooks: [docs/go-to-market.md](docs/go-to-market.
 
 ## Design principles
 
-**Separation of concerns at every layer.** Helm release versions, replica counts, and chart config live in Terraform — not ad-hoc `helm upgrade` commands. ConfigMaps that drive runtime behavior are Terraform resources with full audit trail and PR-based change control.
+**Separation of concerns at every layer.** Helm release versions, replica counts, and chart config live in Terraform, not ad-hoc `helm upgrade` commands. ConfigMaps that drive runtime behavior are Terraform resources with full audit trail and PR-based change control.
 
 **Ephemeral state handled at the IaC layer.** Pod IPs are transient. Rather than fighting this, modules use `data "kubernetes_pod_v1"` to query live cluster state and converge AWS resources (NLB target groups) to match. Every `terraform apply` is a reconciliation loop.
 
 **Least-privilege exposure by design.** PrivateLink keeps cross-account traffic off the public internet. Separate NLB target groups per gateway type enforce protocol-level isolation. `target_type = ip` bypasses NodePort NAT and preserves source IP end-to-end.
 
-**Everything version-controlled, nothing click-ops.** IAM roles, Cognito federation, Grafana alert rules, ACR cleanup tasks — all Terraform resources. If it can't be reviewed in a PR and rolled back with a revert, it doesn't exist in production.
+**Everything version-controlled, nothing click-ops.** IAM roles, Cognito federation, Grafana alert rules, ACR cleanup tasks: all Terraform resources. If it can't be reviewed in a PR and rolled back with a revert, it doesn't exist in production.
 
 ---
 
@@ -121,7 +121,7 @@ module "eks" {
 
 ### `modules/nginx_ingress`
 
-NGINX on NLB for the DeviceService SSH/ADB gateway and device streaming. The hard problem is ephemeral pod IPs — NLB `target_type = ip` registers pod IPs directly (preserves source IP for SSH auth), but pod IPs change on every rollout. The module uses `data "kubernetes_pod_v1"` + `for_each` so every `terraform apply` re-syncs NLB targets to actual pod state.
+NGINX on NLB for the DeviceService SSH/ADB gateway and device streaming. The hard problem is ephemeral pod IPs: NLB `target_type = ip` registers pod IPs directly (preserves source IP for SSH auth), but pod IPs change on every rollout. The module uses `data "kubernetes_pod_v1"` + `for_each` so every `terraform apply` re-syncs NLB targets to actual pod state.
 
 ```
 Traffic path:
@@ -180,7 +180,9 @@ Full IoT telemetry logging stack:
 
 Full Apigee X setup. Proxy bundles rendered from templates via `archive_file`. Each bundle includes JS-ValidateToken (Bearer token introspection), JS-PathRouter (dynamic `target.url`), and SpikeArrest (600 req/min).
 
-Reduced many fragmented proxies to a smaller set (a large reduction), cutting Apigee latency from N ms to M ms (a large reduction).
+Consolidated many fragmented proxies to a smaller set (a large reduction), simplifying auth and routing logic across the org.
+
+Separately, resolved a production latency incident on this Apigee org (paged for InferenceService workflows hitting the Storage API): scaled the backend HPA to 10 pods as an immediate mitigation, cutting p99 latency from N ms to M ms (a large reduction). A follow-up Apigee version and Kubernetes cluster upgrade, done with the platform team, brought it down further to a target SLA.
 
 ### `modules/gke`
 
