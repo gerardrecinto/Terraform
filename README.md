@@ -194,6 +194,20 @@ Three example proxies showing the path-routing and token-auth pattern:
 
 ---
 
+## secure-connectivity/
+
+A separate, self-contained portfolio: five pieces of AWS connectivity
+infrastructure (public NGINX service, private SSM-only compute access, an
+optional hardened access gateway, and two environment-orchestration
+capstones that compose the modules together). Built to demonstrate
+public-vs-private trust boundaries, identity-aware administrative access,
+and module composition specifically -- see
+[secure-connectivity/PROGRESS.md](secure-connectivity/PROGRESS.md) for build
+status and [secure-connectivity/docs/interview-guide.md](secure-connectivity/docs/interview-guide.md)
+(once written) for the design-decision writeups.
+
+---
+
 ## License
 
 MIT

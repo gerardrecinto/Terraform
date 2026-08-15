@@ -47,19 +47,20 @@ secure-connectivity/
 
 | Piece | Status | Notes |
 |---|---|---|
-| Pre-existing repo sanitization (DeviceService/PackageService/InferenceService/the team/Telemetry/$ figures) | DONE | commit 63a0b53, pushed to main |
-| modules/network | IN PROGRESS | |
-| modules/nginx-public-service | NOT STARTED | Project 1 (user's priority pick) |
-| modules/private-compute-access | NOT STARTED | Project 2 |
-| modules/access-gateway | NOT STARTED | Project 3 |
-| environments/web-platform | NOT STARTED | Project 4 capstone |
-| environments/device-connectivity | NOT STARTED | Project 5 capstone |
+| Pre-existing repo sanitization (internal product/team names, real $ and scale figures) | DONE | content sanitized, then full git history rewritten (git filter-repo) and force-pushed to strip the same strings from every prior commit and both tags |
+| modules/network | DONE | fmt + validate + trivy clean (1 accepted finding, documented in README) |
+| modules/nginx-public-service | CODE DONE, VALIDATE PENDING | fmt clean; `terraform validate` kept timing out in this environment (multiple aws provider v6.60.0 processes pegged at ~99% CPU, likely Rosetta translation overhead on this Mac for the darwin_amd64 binary) — re-run `terraform init -backend=false && terraform validate` one at a time (not in parallel) to confirm |
+| modules/private-compute-access | CODE DONE, VALIDATE PENDING, NO README YET | same validate issue as above |
+| modules/access-gateway | CODE DONE, NOT VALIDATED, NO README YET | never got to init/validate this one; do that first when picking this up |
+| environments/web-platform | NOT STARTED | Project 4 capstone -- composes network + nginx-public-service + private-compute-access |
+| environments/device-connectivity | NOT STARTED | Project 5 capstone -- NLB vs ALB decision, edge + backend + admin paths |
 | docs/interview-guide.md | NOT STARTED | |
 | docs/threat-model.md | NOT STARTED | |
 | CI workflow | NOT STARTED | |
-| terraform fmt/validate pass | NOT STARTED | trivy available locally; tflint/checkov/terraform-docs NOT installed — note as limitation, don't claim they ran |
+| terraform fmt pass | DONE for all 4 modules built so far | |
+| terraform validate pass | PARTIAL — network module confirmed clean; nginx-public-service/private-compute-access/access-gateway not yet confirmed (see above) | trivy available locally; tflint/checkov/terraform-docs NOT installed — note as limitation, don't claim they ran |
 | Resume bullets | NOT STARTED | |
-| Final push to main | NOT STARTED | user has authorized direct push to main, no PR review needed |
+| Push to main | IN PROGRESS, pushing incrementally | user has authorized direct push to main, no PR review needed; a full git-history rewrite (git filter-repo) was already done once on this repo to scrub pre-existing sensitive names/metrics -- see git log, that's expected and done, don't repeat it |
 
 ## If picking this up cold
 
@@ -70,6 +71,7 @@ secure-connectivity/
    fmt/validate-only results as if those tools ran.
 4. User (Gerard) has explicitly authorized pushing straight to `main` with no PR
    review for this repo/task.
-5. Hard constraint: no the company-specific names, internal product names, or real
-   business metrics anywhere in this repo — see the sanitization commit above
-   for the pattern of what was removed and why.
+5. Hard constraint: no real employer names, internal product names, or real
+   business metrics anywhere in this repo, including in commit messages —
+   note this repo's git history was rewritten once already for this reason,
+   so check any new content the same way before committing.
