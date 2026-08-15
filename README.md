@@ -4,8 +4,6 @@
 
 Infrastructure-as-code across on-premises, AWS, Azure, and GCP. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, Apigee, PrivateLink, S3 tiering, observability, and logging pipelines.
 
-The S3 lifecycle module alone delivered **$X/year in cost savings** by tiering ~N PB of Telemetry log data to Glacier Deep Archive across multiple regions.
-
 ![Terraform](https://img.shields.io/badge/Terraform-1.7%2B-7B42BC?logo=terraform&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-EKS%20%7C%20S3%20%7C%20OpenSearch-FF9900?logo=amazon-aws&logoColor=white)
 ![Azure](https://img.shields.io/badge/Azure-AKS%20%7C%20ACR-0089D6?logo=microsoft-azure&logoColor=white)
@@ -16,7 +14,7 @@ The S3 lifecycle module alone delivered **$X/year in cost savings** by tiering ~
 
 Commercial angle and consulting hooks: [docs/go-to-market.md](docs/go-to-market.md).
 
-> **Note:** All company-specific values (account IDs, hostnames, ARNs, VPC CIDRs) are replaced with generic placeholders. The module design and implementation reflect actual production work.
+> **Note:** This is a personal portfolio repository. Module design and provisioning patterns are original implementations inspired by common enterprise infrastructure problems. All company names, internal system names, account IDs, hostnames, ARNs, VPC CIDRs, and business metrics have been removed or replaced with generic placeholders — none of the figures or names in this repository refer to a real employer, deployment, or production outcome.
 
 ---
 
@@ -62,7 +60,7 @@ GCP/
 │   ├── gke/               private cluster: Workload Identity, Binary Authorization, Shielded Nodes
 │   └── gcs_lifecycle/     Standard → Nearline → Coldline → Archive with CMEK
 └── workflows/
-    └── deploy_apigee_proxies/ DeviceService, PackageService, InferenceService proxies with token auth + path routing
+    └── deploy_apigee_proxies/ three example API proxies with token auth + path routing
 ```
 
 ---
@@ -71,15 +69,15 @@ GCP/
 
 ### `modules/s3_lifecycle`
 
-Tiered storage that saved $X/year on N PB of Telemetry log data:
+Tiered log storage: Standard → Standard-IA → Glacier Deep Archive, with KMS enforcement and optional cross-region replication. This models a common cost-optimization pattern for large, append-only log buckets where recent data needs fast access and older data can move to cold storage.
 
 ```hcl
-module "telemetry_logs" {
+module "log_archive" {
   source = "./AWS/modules/s3_lifecycle"
 
-  bucket_name                = "telemetry-logs-prod"
+  bucket_name                = "app-logs-prod"
   environment                = "prod"
-  log_prefix                 = "telemetry-logs/"
+  log_prefix                 = "logs/"
   transition_to_glacier_days = 90
   kms_key_arn                = var.kms_key_arn
   enforce_encryption_policy  = true
@@ -121,7 +119,7 @@ module "eks" {
 
 ### `modules/nginx_ingress`
 
-NGINX on NLB for the DeviceService SSH/ADB gateway and device streaming. The hard problem is ephemeral pod IPs: NLB `target_type = ip` registers pod IPs directly (preserves source IP for SSH auth), but pod IPs change on every rollout. The module uses `data "kubernetes_pod_v1"` + `for_each` so every `terraform apply` re-syncs NLB targets to actual pod state.
+NGINX on NLB for an SSH/ADB-style device gateway plus a general streaming target. The hard problem is ephemeral pod IPs: NLB `target_type = ip` registers pod IPs directly (preserves source IP for SSH auth), but pod IPs change on every rollout. The module uses `data "kubernetes_pod_v1"` + `for_each` so every `terraform apply` re-syncs NLB targets to actual pod state.
 
 ```
 Traffic path:
@@ -130,23 +128,23 @@ Traffic path:
          └─ NLB (internal)
               ├─ Target Group: ssh_adb (port 22, target_type=ip)
               │    └─ pod IPs registered dynamically via for_each
-              └─ Target Group: device_streaming (port 443, target_type=ip)
+              └─ Target Group: streaming (port 443, target_type=ip)
                    └─ source IP sticky → NGINX TCP stream → pod
 ```
 
 ### `modules/grafana_alerting`
 
-Terraform-managed Grafana alerts across 10 ALBs and 4 AWS services in 5 environments:
+Terraform-managed Grafana alert rules for ALBs, MSK, and SQS, parameterized by ARN suffixes and thresholds so the same module can be reused across environments:
 
 ```hcl
 module "grafana_alerts" {
   source = "./AWS/modules/grafana_alerting"
 
   environment        = "prod"
-  alb_arn_suffixes   = [module.alb_device_service.arn_suffix, module.alb_inference_service.arn_suffix]
+  alb_arn_suffixes   = [module.alb_app_a.arn_suffix, module.alb_app_b.arn_suffix]
   alb_5xx_threshold  = 10
   alb_latency_p99_ms = 2000
-  msk_cluster_name   = "iot-platform-prod"
+  msk_cluster_name   = "events-prod"
   sqs_queue_names    = ["event-queue-prod", "release-queue-prod"]
   slack_webhook_url  = var.slack_webhook
 }
@@ -162,7 +160,7 @@ AKS with Azure AD RBAC, workload identity (OIDC issuer), ACR pull role, Containe
 
 ### `workflows/deploy_aks_logging`
 
-Full IoT telemetry logging stack:
+Example telemetry logging stack:
 
 | Component | Role |
 |---|---|
@@ -178,11 +176,7 @@ Full IoT telemetry logging stack:
 
 ### `modules/apigee`
 
-Full Apigee X setup. Proxy bundles rendered from templates via `archive_file`. Each bundle includes JS-ValidateToken (Bearer token introspection), JS-PathRouter (dynamic `target.url`), and SpikeArrest (600 req/min).
-
-Consolidated many fragmented proxies to a smaller set (a large reduction), simplifying auth and routing logic across the org.
-
-Separately, resolved a production latency incident on this Apigee org (paged for InferenceService workflows hitting the Storage API): scaled the backend HPA to 10 pods as an immediate mitigation, cutting p99 latency from N ms to M ms (a large reduction). A follow-up Apigee version and Kubernetes cluster upgrade, done with the platform team, brought it down further to a target SLA.
+Apigee X setup with org/env/instance provisioning. Proxy bundles are rendered from templates via `archive_file`. Each bundle includes JS-ValidateToken (Bearer token introspection), JS-PathRouter (dynamic `target.url`), and SpikeArrest (600 req/min) — a pattern for consolidating many single-purpose API proxies into fewer parameterized ones, reducing duplicated auth and routing logic across an org.
 
 ### `modules/gke`
 
@@ -190,13 +184,13 @@ Private, VPC-native GKE with Workload Identity, Binary Authorization, Shielded N
 
 ### `workflows/deploy_apigee_proxies`
 
-DeviceService, PackageService, InferenceService proxies in production:
+Three example proxies showing the path-routing and token-auth pattern:
 
 | Proxy | Base Path | Routes |
 |---|---|---|
-| DeviceService | `/device_service/v2` | `/devices`, `/ssh`, `/workspaces`, `/builds` |
-| PackageService | `/package_service/v2` | `/packages`, `/download`, `/catalog`, `/releases` |
-| InferenceService | `/inference_service/v2` | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
+| device-api | `/device-api/v2` | `/devices`, `/ssh`, `/workspaces`, `/builds` |
+| package-api | `/package-api/v2` | `/packages`, `/download`, `/catalog`, `/releases` |
+| inference-api | `/inference-api/v2` | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
 
 ---
 

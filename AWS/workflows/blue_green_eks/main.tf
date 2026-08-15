@@ -2,7 +2,7 @@
 # All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
 # have been replaced with generic placeholders to preserve company CCI.
 # Blue-green migration: Elastic Beanstalk -> EKS
-# This workflow reproduced the DeviceService zero-downtime cutover:
+# This workflow models a zero-downtime cutover pattern:
 #   1. EKS cluster and target group already running in parallel
 #   2. ALB listener rule shifted from Beanstalk TG to EKS TG in one apply
 #   3. Beanstalk env decommissioned after validation
@@ -11,7 +11,7 @@
 # gradually increase while monitoring 5XX rates, then flip to 100.
 
 locals {
-  service_name = "device_service"
+  service_name = "app"
   environment  = var.environment
   region       = var.aws_region
 }

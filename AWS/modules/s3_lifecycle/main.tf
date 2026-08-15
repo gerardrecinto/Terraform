@@ -2,8 +2,10 @@
 # All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
 # have been replaced with generic placeholders to preserve company CCI.
 # S3 lifecycle module
-# Drives ~N PB of Telemetry log data from S3-Standard -> Standard-IA -> Glacier Deep Archive
-# Delivered $X/month (~$X/year) in cloud cost savings as an example scenario across multiple regions regions
+# Transitions log data from S3-Standard -> Standard-IA -> Glacier Deep Archive,
+# with optional cross-region replication and KMS enforcement. Models a common
+# cost-optimization pattern for large, append-only log buckets; no production
+# metrics are claimed here.
 
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
@@ -128,7 +130,7 @@ resource "aws_s3_bucket_policy" "this" {
   })
 }
 
-# Replication to additional regions (Mumbai, Frankfurt for Telemetry global coverage)
+# Replication to additional regions for global coverage
 resource "aws_s3_bucket_replication_configuration" "this" {
   count = length(var.replication_regions) > 0 ? 1 : 0
 

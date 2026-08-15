@@ -2,7 +2,7 @@
 # All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
 # have been replaced with generic placeholders to preserve company CCI.
 # Apigee module
-# Covers: Apigee API proxies for DeviceService, PackageService, and InferenceService (ExampleCorp Sr SWE / GCP)
+# Covers: Apigee API proxy provisioning with token auth, path routing, and rate limiting
 # Each proxy includes:
 #   - JS policy for Bearer token validation before forwarding to backend
 #   - Path-based routing policies to direct traffic to different backend URLs

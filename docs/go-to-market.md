@@ -16,5 +16,5 @@ This repo is a platform infrastructure portfolio: reusable Terraform modules, cl
 ## Launch Hooks
 
 - "Terraform is only valuable when it replaces click-ops with reviewable, rollbackable infrastructure."
-- "The best IaC story is measurable: this module family includes a $26M/year storage savings pattern."
+- "The best IaC story is measurable: this module family shows a real S3 storage-tiering pattern, not just a diagram."
 - "Cloud platform work should show security, cost, and operability in the same repo."

@@ -2,7 +2,7 @@
 
 Terraform modules and workflows for provisioning and upgrading bare-metal Kubernetes clusters. Covers server baseline setup, security hardening, kubeadm-based cluster lifecycle, in-cluster networking (MetalLB + NGINX + CoreDNS), and rolling upgrade runbooks for both the OS and Kubernetes itself.
 
-> All company-specific values — IP addresses, hostnames, NTP servers, SSH keys, CIDR blocks — are replaced with `PLACEHOLDER_*` values. The module logic, provisioning approach, and upgrade sequencing reflect production patterns used on Telemetry on-prem infrastructure.
+> All company-specific values — IP addresses, hostnames, NTP servers, SSH keys, CIDR blocks — are replaced with `PLACEHOLDER_*` values. This is a personal portfolio implementation; no names, hosts, or figures here refer to a real employer or deployment.
 
 ## Structure
 

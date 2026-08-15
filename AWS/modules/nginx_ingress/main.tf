@@ -2,7 +2,7 @@
 # All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
 # have been replaced with generic placeholders to preserve company CCI.
 #
-# NGINX Ingress module -- DeviceService SSH/ADB Gateway and Device Streaming
+# NGINX Ingress module -- SSH/ADB-style device gateway and streaming target
 #
 # Architecture:
 #   PrivateLink IP (consumer VPC)

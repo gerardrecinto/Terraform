@@ -4,7 +4,8 @@
 # Required before any cost allocation or chargeback reporting is accurate.
 #
 # Usage: Apply at the AWS Organizations root or per-OU for multi-team enforcement.
-# This pattern reduced unattributed spend from ~40% to <2% in a N PB multi-region deployment.
+# This pattern is a standard approach for reducing unattributed spend in large,
+# multi-region deployments; no production metrics are claimed here.
 
 resource "aws_organizations_policy" "cost_tagging" {
   count = var.enable_org_policy ? 1 : 0

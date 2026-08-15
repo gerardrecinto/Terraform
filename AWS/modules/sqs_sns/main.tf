@@ -2,7 +2,7 @@
 # All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
 # have been replaced with generic placeholders to preserve company CCI.
 # SQS + SNS module with DLQ
-# Used across ExampleCorp platforms: InferenceService, DeviceService, IoT telemetry event pipelines
+# Reusable across multiple platforms/services: API event pipelines, device fleets, IoT telemetry
 
 locals {
   queue_name = var.fifo ? "${var.name}-${var.environment}.fifo" : "${var.name}-${var.environment}"

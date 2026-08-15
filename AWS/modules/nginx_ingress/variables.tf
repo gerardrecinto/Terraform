@@ -84,7 +84,7 @@ variable "tcp_services" {
 
 variable "ssh_gateway_namespace" {
   type        = string
-  default     = "device_service"
+  default     = "device-gateway"
   description = "Kubernetes namespace containing the SSH/ADB gateway service."
 }
 
@@ -104,7 +104,7 @@ variable "ssh_gateway_pod_labels" {
 
 variable "device_streaming_namespace" {
   type        = string
-  default     = "device_service"
+  default     = "device-gateway"
   description = "Kubernetes namespace containing the device streaming service."
 }
 

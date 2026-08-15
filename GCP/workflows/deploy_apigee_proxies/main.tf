@@ -1,10 +1,7 @@
 # NOTE: Published as supporting evidence for skills on resume.
 # All company-specific values (account IDs, hostnames, ARNs, CIDRs, resource names)
-# have been replaced with generic placeholders to preserve company CCI.
-# Apigee proxy deployment workflow
-# Deploys three API proxies: DeviceService, PackageService (Software Center), and InferenceService
-# Each proxy uses JS policies for token validation and path-based backend routing
-# Mirrors the production setup built at ExampleCorp on GCP Apigee
+# have been replaced with generic placeholders. This is an original portfolio
+# implementation demonstrating the Apigee proxy-consolidation pattern generically.
 
 terraform {
   required_providers {
@@ -39,52 +36,52 @@ module "apigee" {
   token_validation_url      = var.token_validation_url
 
   api_proxies = {
-    # DeviceService (ExampleCorp Developer Cloud) -- primary developer portal API
-    # Handles device auth tokens and routes to different DeviceService backend services
-    device_service = {
-      display_name       = "DeviceService API"
-      description        = "ExampleCorp Developer Cloud API proxy -- token auth, path routing to device management and SSH gateway services"
-      base_path          = "/device_service/v2"
-      target_url         = "https://${var.device_service_backend_host}"
+    # device-api -- example device-management API
+    # Handles device auth tokens and routes to different device backend services
+    device_api = {
+      display_name       = "Device API"
+      description        = "Device management API proxy -- token auth, path routing to device management and SSH gateway services"
+      base_path          = "/device-api/v2"
+      target_url         = "https://${var.device_api_backend_host}"
       token_auth_enabled = true
       path_routes = {
-        "/devices"    = "https://${var.device_service_backend_host}/api/devices"
-        "/ssh"        = "https://${var.device_service_backend_host}/api/ssh-gateway"
-        "/workspaces" = "https://${var.device_service_backend_host}/api/workspaces"
-        "/builds"     = "https://${var.device_service_backend_host}/api/builds"
+        "/devices"    = "https://${var.device_api_backend_host}/api/devices"
+        "/ssh"        = "https://${var.device_api_backend_host}/api/ssh-gateway"
+        "/workspaces" = "https://${var.device_api_backend_host}/api/workspaces"
+        "/builds"     = "https://${var.device_api_backend_host}/api/builds"
       }
     }
 
-    # PackageService (ExampleCorp Software Center) -- software package delivery
-    # Pre-signed URL generation is handled by a Python Flask service behind this proxy
-    package_service = {
-      display_name       = "PackageService Software Center API"
-      description        = "Software Center API proxy -- validates customer tokens and routes to package delivery service (Flask pre-signed URL generator)"
-      base_path          = "/package_service/v2"
-      target_url         = "https://${var.package_service_backend_host}"
+    # package-api -- example software package delivery API
+    # Pre-signed URL generation is handled by a backend service behind this proxy
+    package_api = {
+      display_name       = "Package API"
+      description        = "Package delivery API proxy -- validates tokens and routes to package delivery service (pre-signed URL generator)"
+      base_path          = "/package-api/v2"
+      target_url         = "https://${var.package_api_backend_host}"
       token_auth_enabled = true
       path_routes = {
-        "/packages" = "https://${var.package_service_backend_host}/api/packages"
-        "/download" = "https://${var.package_service_backend_host}/api/presigned"
-        "/catalog"  = "https://${var.package_service_backend_host}/api/catalog"
-        "/releases" = "https://${var.package_service_backend_host}/api/releases"
+        "/packages" = "https://${var.package_api_backend_host}/api/packages"
+        "/download" = "https://${var.package_api_backend_host}/api/presigned"
+        "/catalog"  = "https://${var.package_api_backend_host}/api/catalog"
+        "/releases" = "https://${var.package_api_backend_host}/api/releases"
       }
     }
 
-    # InferenceService -- public AI model and API access
+    # inference-api -- example AI model inference API
     # Routes to different model serving endpoints based on path
-    inference_service = {
-      display_name       = "InferenceService API"
-      description        = "ExampleCorp AI Hub API proxy -- model inference, deployment, and benchmark routing with token auth"
-      base_path          = "/inference_service/v2"
-      target_url         = "https://${var.inference_service_backend_host}"
+    inference_api = {
+      display_name       = "Inference API"
+      description        = "Model inference API proxy -- model inference, deployment, and benchmark routing with token auth"
+      base_path          = "/inference-api/v2"
+      target_url         = "https://${var.inference_api_backend_host}"
       token_auth_enabled = true
       path_routes = {
-        "/models"     = "https://${var.inference_service_backend_host}/api/models"
-        "/inference"  = "https://${var.inference_service_backend_host}/api/inference"
-        "/benchmarks" = "https://${var.inference_service_backend_host}/api/benchmarks"
-        "/compile"    = "https://${var.inference_service_backend_host}/api/compile"
-        "/profile"    = "https://${var.inference_service_backend_host}/api/profile"
+        "/models"     = "https://${var.inference_api_backend_host}/api/models"
+        "/inference"  = "https://${var.inference_api_backend_host}/api/inference"
+        "/benchmarks" = "https://${var.inference_api_backend_host}/api/benchmarks"
+        "/compile"    = "https://${var.inference_api_backend_host}/api/compile"
+        "/profile"    = "https://${var.inference_api_backend_host}/api/profile"
       }
     }
   }

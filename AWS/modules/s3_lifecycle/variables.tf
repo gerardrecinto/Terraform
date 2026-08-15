@@ -6,7 +6,7 @@ variable "environment" {
   type = string
 }
 
-# Prefix filter -- target specific log paths (e.g., "telemetry-logs/")
+# Prefix filter -- target specific log paths (e.g., "app-logs/")
 variable "log_prefix" {
   type    = string
   default = ""
@@ -43,7 +43,7 @@ variable "enforce_encryption_policy" {
 }
 
 variable "replication_regions" {
-  description = "Additional regions to replicate to (e.g., ap-south-1, eu-central-1 for Telemetry)"
+  description = "Additional regions to replicate to (e.g., ap-south-1, eu-central-1)"
   type        = list(string)
   default     = []
 }

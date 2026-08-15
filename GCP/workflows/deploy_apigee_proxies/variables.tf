@@ -33,17 +33,17 @@ variable "vpc_peering_cidr" {
 }
 
 # Backend host for each proxy (internal service URLs)
-variable "device_service_backend_host" {
+variable "device_api_backend_host" {
   type      = string
   sensitive = true
 }
 
-variable "package_service_backend_host" {
+variable "package_api_backend_host" {
   type      = string
   sensitive = true
 }
 
-variable "inference_service_backend_host" {
+variable "inference_api_backend_host" {
   type      = string
   sensitive = true
 }
