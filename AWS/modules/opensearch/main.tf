@@ -65,20 +65,6 @@ resource "aws_opensearch_domain" "this" {
     enabled                        = true
     anonymous_auth_enabled         = false
     internal_user_database_enabled = var.saml_enabled ? false : true
-
-    dynamic "saml_options" {
-      for_each = var.saml_enabled && var.saml_metadata_content != "" ? [1] : []
-      content {
-        enabled = true
-        idp {
-          entity_id        = "https://sts.windows.net/${var.saml_master_backend_role}/"
-          metadata_content = var.saml_metadata_content
-        }
-        master_backend_role     = var.saml_master_backend_role
-        roles_key               = "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups"
-        session_timeout_minutes = 60
-      }
-    }
   }
 
   log_publishing_options {
@@ -97,6 +83,25 @@ resource "aws_opensearch_domain" "this" {
   })
 
   depends_on = [aws_cloudwatch_log_resource_policy.opensearch]
+}
+
+# SAML for direct Azure AD federation without Cognito -- this is a separate
+# resource in the AWS provider (aws_opensearch_domain_saml_options), not a
+# nested block on aws_opensearch_domain.
+resource "aws_opensearch_domain_saml_options" "this" {
+  count       = var.saml_enabled && var.saml_metadata_content != "" ? 1 : 0
+  domain_name = aws_opensearch_domain.this.domain_name
+
+  saml_options {
+    enabled = true
+    idp {
+      entity_id        = "https://sts.windows.net/${var.saml_master_backend_role}/"
+      metadata_content = var.saml_metadata_content
+    }
+    master_backend_role     = var.saml_master_backend_role
+    roles_key               = "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups"
+    session_timeout_minutes = 60
+  }
 }
 
 resource "aws_security_group" "opensearch" {

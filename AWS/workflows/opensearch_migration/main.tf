@@ -154,7 +154,7 @@ resource "aws_cognito_user_pool_client" "opensearch" {
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
   callback_urls = [
-    "https://${module.opensearch.kibana_endpoint}/_plugin/kibana/app/home"
+    "https://${module.opensearch.dashboard_endpoint}/_dashboards/app/home"
   ]
   supported_identity_providers = ["AzureAD"]
 }
