@@ -168,10 +168,12 @@ resource "azurerm_virtual_network_peering" "spoke_to_hub" {
 resource "azurerm_route_table" "spoke" {
   for_each = var.spokes
 
-  name                          = "${var.prefix}-${each.key}-rt"
-  location                      = var.location
-  resource_group_name           = var.resource_group_name
-  disable_bgp_route_propagation = true
+  name                = "${var.prefix}-${each.key}-rt"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  # disable_bgp_route_propagation is deprecated in favor of this in azurerm v3.x
+  # and will be removed in v4.0.
+  bgp_route_propagation_enabled = false
   tags                          = var.tags
 
   route {
