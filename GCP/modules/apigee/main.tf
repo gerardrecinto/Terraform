@@ -109,16 +109,6 @@ resource "google_apigee_instance_attachment" "this" {
   environment = google_apigee_environment.this.name
 }
 
-# API proxy bundles -- one per proxy in var.api_proxies
-# Each bundle is a zip of the proxy directory rendered from templates
-resource "google_apigee_api" "proxies" {
-  for_each = var.api_proxies
-
-  org_id        = google_apigee_organization.this.id
-  name          = each.key
-  config_bundle = data.archive_file.proxy_bundle[each.key].output_path
-}
-
 # Render proxy bundle for each API proxy
 data "archive_file" "proxy_bundle" {
   for_each = var.api_proxies
@@ -191,14 +181,38 @@ data "archive_file" "proxy_bundle" {
   }
 }
 
-# Deploy each proxy to the environment
-resource "google_apigee_api_deployment" "proxies" {
+# Upload + deploy each proxy bundle to the environment.
+#
+# The google provider has no resource for individual API proxy bundles --
+# Apigee proxy revisions are only manageable through the Apigee Management
+# API / gcloud, not through native Terraform resources (google_apigee_api
+# and google_apigee_api_deployment, used previously here, don't exist in
+# the provider). This shells out to gcloud, which is the documented
+# workaround. Re-runs on any change to the rendered bundle contents.
+resource "null_resource" "proxy_deploy" {
   for_each = var.api_proxies
 
-  org_id      = google_apigee_organization.this.id
-  api_id      = google_apigee_api.proxies[each.key].name
-  environment = google_apigee_environment.this.name
-  revision    = google_apigee_api.proxies[each.key].latest_revision_id
+  triggers = {
+    bundle_sha256 = data.archive_file.proxy_bundle[each.key].output_sha
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      REV=$(gcloud apigee apis create ${each.key} \
+        --project=${var.project_id} \
+        --organization=${google_apigee_organization.this.name} \
+        --bundle-file=${data.archive_file.proxy_bundle[each.key].output_path} \
+        --format="value(revision)")
+      gcloud apigee apis deploy \
+        --project=${var.project_id} \
+        --organization=${google_apigee_organization.this.name} \
+        --environment=${google_apigee_environment.this.name} \
+        --api=${each.key} \
+        --revision="$REV" \
+        --override
+    EOT
+  }
 
   depends_on = [google_apigee_instance_attachment.this]
 }

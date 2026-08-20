@@ -19,5 +19,5 @@ output "proxy_service_account_email" {
 }
 
 output "deployed_proxies" {
-  value = keys(google_apigee_api_deployment.proxies)
+  value = keys(null_resource.proxy_deploy)
 }
