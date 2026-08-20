@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/null"
       version = "~> 3.2"
     }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.4"
+    }
   }
 }
 
@@ -80,4 +84,24 @@ resource "null_resource" "kubeadm_init" {
       "sudo chmod 640 /tmp/k8s_join_command.sh",
     ]
   }
+}
+
+# The join command only exists on the control plane's disk after kubeadm_init
+# runs -- pull it back over SSH so the workers module can consume it as an
+# output instead of having to SSH into the control plane a second time.
+resource "null_resource" "fetch_join_command" {
+  depends_on = [null_resource.kubeadm_init]
+
+  triggers = {
+    host = var.host
+  }
+
+  provisioner "local-exec" {
+    command = "ssh -i '${var.ssh_private_key_path}' -o StrictHostKeyChecking=no ${var.ssh_user}@${var.host} 'sudo cat /tmp/k8s_join_command.sh' > '${path.module}/.join_command.${md5(var.host)}.txt'"
+  }
+}
+
+data "local_file" "join_command" {
+  depends_on = [null_resource.fetch_join_command]
+  filename   = "${path.module}/.join_command.${md5(var.host)}.txt"
 }

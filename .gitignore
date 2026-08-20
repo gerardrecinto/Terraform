@@ -26,3 +26,6 @@ override.tf.json
 .aws/
 *.pem
 *.key
+
+# kubeadm join command fetched locally by the k8s-controlplane module
+.join_command.*.txt
