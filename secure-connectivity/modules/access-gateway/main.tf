@@ -33,32 +33,32 @@ resource "aws_vpc_security_group_ingress_rule" "gateway_ssh" {
   for_each = toset(var.admin_cidr_allowlist)
 
   security_group_id = aws_security_group.gateway.id
-  description        = "SSH from an explicitly allowlisted admin CIDR"
-  cidr_ipv4           = each.value
-  from_port            = 22
-  to_port               = 22
-  ip_protocol           = "tcp"
+  description       = "SSH from an explicitly allowlisted admin CIDR"
+  cidr_ipv4         = each.value
+  from_port         = 22
+  to_port           = 22
+  ip_protocol       = "tcp"
 }
 
 # Egress is SG-to-SG only, to the private target's security group -- this
 # gateway cannot reach anything else in the VPC, and cannot reach the
 # internet at all except via the HTTPS rule below (needed for SSM).
 resource "aws_vpc_security_group_egress_rule" "gateway_to_target" {
-  security_group_id           = aws_security_group.gateway.id
+  security_group_id            = aws_security_group.gateway.id
   description                  = "SSH forwarding to the private target's security group only"
   referenced_security_group_id = var.target_security_group_id
-  from_port                     = 22
-  to_port                        = 22
-  ip_protocol                    = "tcp"
+  from_port                    = 22
+  to_port                      = 22
+  ip_protocol                  = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "gateway_https" {
   security_group_id = aws_security_group.gateway.id
-  description        = "HTTPS egress for SSM (gateway itself is administered via Session Manager) and package repos"
-  cidr_ipv4           = "0.0.0.0/0"
-  from_port            = 443
-  to_port               = 443
-  ip_protocol            = "tcp"
+  description       = "HTTPS egress for SSM (gateway itself is administered via Session Manager) and package repos"
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
 }
 
 # --- IAM: gateway administered via SSM regardless of whether key_name is set
@@ -113,7 +113,7 @@ resource "aws_launch_template" "gateway" {
   vpc_security_group_ids = [aws_security_group.gateway.id]
 
   metadata_options {
-    http_tokens                = "required" # IMDSv2 enforced
+    http_tokens                 = "required" # IMDSv2 enforced
     http_endpoint               = "enabled"
     http_put_response_hop_limit = 1
   }
@@ -123,9 +123,9 @@ resource "aws_launch_template" "gateway" {
 
     ebs {
       volume_size           = 20
-      volume_type            = "gp3"
-      encrypted               = true
-      delete_on_termination   = true
+      volume_type           = "gp3"
+      encrypted             = true
+      delete_on_termination = true
     }
   }
 
@@ -152,7 +152,7 @@ resource "aws_autoscaling_group" "gateway" {
   max_size            = 1
   desired_capacity    = 1
 
-  health_check_type        = "EC2"
+  health_check_type         = "EC2"
   health_check_grace_period = 60
 
   launch_template {
@@ -164,8 +164,8 @@ resource "aws_autoscaling_group" "gateway" {
     for_each = merge(local.tags, { Name = "${var.name}-gateway" })
     content {
       key                 = tag.key
-      value                = tag.value
-      propagate_at_launch  = true
+      value               = tag.value
+      propagate_at_launch = true
     }
   }
 }
@@ -183,13 +183,13 @@ resource "aws_cloudwatch_metric_alarm" "no_healthy_gateway" {
   alarm_name          = "${var.name}-gateway-not-in-service"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 2
-  metric_name          = "GroupInServiceInstances"
-  namespace             = "AWS/AutoScaling"
-  period                 = 60
-  statistic               = "Average"
-  threshold                = 1
-  treat_missing_data        = "breaching"
-  alarm_description          = "The access gateway has no healthy in-service instance -- min/desired/max are all 1, so this means the gateway is currently down or mid-replacement."
+  metric_name         = "GroupInServiceInstances"
+  namespace           = "AWS/AutoScaling"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 1
+  treat_missing_data  = "breaching"
+  alarm_description   = "The access gateway has no healthy in-service instance -- min/desired/max are all 1, so this means the gateway is currently down or mid-replacement."
 
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.gateway.name
