@@ -30,17 +30,13 @@ resource "azurerm_container_registry" "this" {
     }
   }
 
-  network_rule_set {
-    default_action = "Deny"
-
-    dynamic "ip_rule" {
-      for_each = var.allowed_ip_ranges
-      content {
-        action   = "Allow"
-        ip_range = ip_rule.value
-      }
-    }
-  }
+  # azurerm 3.90+ models network_rule_set as a nested attribute, not a
+  # block -- assigned as a list-of-one-object rather than a `{ }` block.
+  network_rule_set = [{
+    default_action  = "Deny"
+    ip_rule         = [for cidr in var.allowed_ip_ranges : { action = "Allow", ip_range = cidr }]
+    virtual_network = []
+  }]
 
   identity {
     type = "SystemAssigned"
