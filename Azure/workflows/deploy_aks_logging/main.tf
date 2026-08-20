@@ -131,7 +131,8 @@ resource "azurerm_eventhub_namespace" "kafka" {
   resource_group_name = azurerm_resource_group.this.name
   sku                 = "Standard"
   capacity            = 2
-  kafka_enabled       = true
+  # Kafka protocol support is automatic on Standard/Premium/Dedicated tier
+  # namespaces -- there's no kafka_enabled argument on this resource.
 
   tags = local.tags
 }
