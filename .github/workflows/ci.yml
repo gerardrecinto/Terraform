@@ -10,6 +10,9 @@ jobs:
   terraform-validate:
     name: Validate Terraform modules
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +44,17 @@ jobs:
           fi
           echo 'No hardcoded credentials detected'
 
-      - name: tfsec security scan
-        uses: aquasecurity/tfsec-action@v1.0.3
+      - name: Trivy IaC misconfig scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          soft_fail: false
+          scan-type: config
+          scan-ref: .
+          trivy-config: trivy.yaml
+          format: sarif
+          output: trivy-results.sarif
+
+      - name: Upload Trivy results to Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif

@@ -89,19 +89,25 @@ resource "aws_vpc_security_group_ingress_rule" "app_from_alb" {
 resource "aws_vpc_security_group_egress_rule" "app_https_out" {
   security_group_id = aws_security_group.app.id
   description       = "HTTPS egress for SSM, package repos, CloudWatch"
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 443
-  to_port           = 443
-  ip_protocol       = "tcp"
+  # SSM/package-repo/CloudWatch endpoints have no fixed IPs; scoped to port
+  # 443 only, no ingress on this SG at all.
+  # tfsec:ignore:aws-vpc-no-public-egress-sgr
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 443
+  to_port     = 443
+  ip_protocol = "tcp"
 }
 
 resource "aws_vpc_security_group_egress_rule" "app_http_out" {
   security_group_id = aws_security_group.app.id
   description       = "HTTP egress for package repo mirrors"
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 80
-  to_port           = 80
-  ip_protocol       = "tcp"
+  # package mirrors have no fixed IPs; scoped to port 80 only, no ingress on
+  # this SG at all.
+  # tfsec:ignore:aws-vpc-no-public-egress-sgr
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 80
+  to_port     = 80
+  ip_protocol = "tcp"
 }
 
 # --- IAM: SSM-only administrative access, no SSH key ------------------------

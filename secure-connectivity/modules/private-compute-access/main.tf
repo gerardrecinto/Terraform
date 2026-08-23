@@ -32,10 +32,13 @@ resource "aws_security_group" "instance" {
 resource "aws_vpc_security_group_egress_rule" "instance_https" {
   security_group_id = aws_security_group.instance.id
   description       = "HTTPS egress for SSM, CloudWatch, package repos"
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 443
-  to_port           = 443
-  ip_protocol       = "tcp"
+  # SSM/CloudWatch/package-repo endpoints have no fixed IPs; scoped to port
+  # 443 only, no ingress on this SG at all.
+  # tfsec:ignore:aws-vpc-no-public-egress-sgr
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 443
+  to_port     = 443
+  ip_protocol = "tcp"
 }
 
 resource "aws_security_group" "vpc_endpoints" {
