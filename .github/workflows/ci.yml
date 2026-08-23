@@ -25,7 +25,7 @@ jobs:
 
       - name: Validate modules
         run: |
-          for mod in AWS/modules/*/ Azure/modules/*/ GCP/modules/*/ on-prem/modules/*/; do
+          for mod in AWS/modules/*/ Azure/modules/*/ GCP/modules/*/ on-prem/modules/*/ secure-connectivity/modules/*/; do
             echo "Validating $mod..."
             cd "$mod"
             terraform init -backend=false -input=false -no-color
