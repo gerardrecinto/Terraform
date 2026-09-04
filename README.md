@@ -10,7 +10,7 @@ Infrastructure-as-code across on-premises, AWS, Azure, and GCP. Reusable modules
 ![GCP](https://img.shields.io/badge/GCP-GKE%20%7C%20Apigee%20X-4285F4?logo=google-cloud&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-![demo](docs/assets/demo.gif)
+<img src="docs/assets/demo.gif" alt="Real terminal recording: terraform fmt -check across every module in this repo, then a trivy IaC security scan (config from trivy.yaml) that actually catches misconfigurations in secure-connectivity" width="820" />
 
 Commercial angle and consulting hooks: [docs/go-to-market.md](docs/go-to-market.md).
 
