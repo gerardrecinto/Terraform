@@ -58,3 +58,34 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-results.sarif
+
+  terragrunt-validate:
+    name: Validate Terragrunt live units
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.x"
+
+      - name: Install Terragrunt
+        run: |
+          curl -sL -o /usr/local/bin/terragrunt \
+            https://github.com/gruntwork-io/terragrunt/releases/download/v1.1.4/terragrunt_linux_amd64
+          chmod +x /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Check formatting
+        run: terragrunt hcl format --check --diff --working-dir live
+
+      - name: Validate HCL syntax
+        run: terragrunt hcl validate --working-dir live
+
+      - name: Init and validate each unit (no backend, no real credentials needed)
+        run: |
+          find live -mindepth 1 -name terragrunt.hcl | xargs -I{} dirname {} | sort -u | while read unit; do
+            echo "Validating $unit..."
+            (cd "$unit" && terragrunt run -- init -backend=false -input=false -no-color \
+              && terragrunt run -- validate -no-color)
+          done

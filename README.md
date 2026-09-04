@@ -2,9 +2,10 @@
 
 ![Terraform Platform IaC logo](docs/assets/logo.svg)
 
-Infrastructure-as-code across on-premises, AWS, Azure, GCP, AliCloud, and OpenStack. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, ACK, Magnum, Apigee, PrivateLink, S3/OSS/Swift tiering, observability, and logging pipelines.
+Infrastructure-as-code across on-premises, AWS, Azure, GCP, AliCloud, and OpenStack. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, ACK, Magnum, Apigee, PrivateLink, S3/OSS/Swift tiering, observability, and logging pipelines, with a Terragrunt layer for running the same workflow across multiple environments without copy-pasting it.
 
 ![Terraform](https://img.shields.io/badge/Terraform-1.7%2B-7B42BC?logo=terraform&logoColor=white)
+![Terragrunt](https://img.shields.io/badge/Terragrunt-multi--env-4A4A4A?logo=terraform&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-EKS%20%7C%20S3%20%7C%20OpenSearch-FF9900?logo=amazon-aws&logoColor=white)
 ![Azure](https://img.shields.io/badge/Azure-AKS%20%7C%20ACR-0089D6?logo=microsoft-azure&logoColor=white)
 ![GCP](https://img.shields.io/badge/GCP-GKE%20%7C%20Apigee%20X-4285F4?logo=google-cloud&logoColor=white)
@@ -79,6 +80,12 @@ OpenStack/
 │   └── octavia_ingress/   HTTPS listener, round-robin pool, active health checks, member registration
 └── workflows/
     └── deploy_magnum_k8s/ Magnum cluster + Swift backups + Octavia ingress, composed together
+
+live/
+├── root.hcl                          shared locals: cloud/environment derived from the folder path
+├── alicloud/{dev,prod}/ack/          dev + prod units for AliCloud/workflows/deploy_ack
+├── openstack/{dev,prod}/magnum_k8s/  dev + prod units for OpenStack/workflows/deploy_magnum_k8s
+└── gcp/{dev,prod}/apigee_proxies/    dev + prod units for GCP/workflows/deploy_apigee_proxies
 ```
 
 ---
@@ -249,6 +256,28 @@ Standalone Octavia load balancer with an HTTPS listener, a round-robin backend p
 ### `workflows/deploy_magnum_k8s`
 
 Composes all three: a Magnum cluster sized by environment (3 masters in prod, 1 elsewhere), a Swift container for backups, and an Octavia load balancer fronting the cluster's ingress nodes.
+
+---
+
+## Terragrunt
+
+The `workflows/` directories above are plain Terraform root modules: each one is runnable on its own with its own `terraform init`. `live/` is a thin Terragrunt layer on top of a few of them, for the actual reason teams reach for Terragrunt: running the same workflow for more than one environment without copy-pasting the whole module tree per environment.
+
+```
+live/
+├── root.hcl                          shared locals: derives cloud/environment from the folder path
+├── alicloud/{dev,prod}/ack/          both point at AliCloud/workflows/deploy_ack
+├── openstack/{dev,prod}/magnum_k8s/  both point at OpenStack/workflows/deploy_magnum_k8s
+└── gcp/{dev,prod}/apigee_proxies/    both point at GCP/workflows/deploy_apigee_proxies
+```
+
+Each leaf `terragrunt.hcl` is a handful of lines: an `include` of `root.hcl`, a `terraform.source` pointing at the workflow, and an `inputs` block with that environment's values (smaller node counts and single-AZ networking in dev, multi-AZ and real capacity in prod). `root.hcl` derives `environment` from the directory path itself (`path_relative_to_include()`), so it is never typed twice: get it from the folder you're standing in, not a variable a future edit can forget to change.
+
+Two things worth knowing if you try this yourself:
+- `source` uses Terragrunt's `parent//subdir` syntax (`AliCloud//workflows/deploy_ack`, not `AliCloud/workflows/deploy_ack`). These workflows call sibling modules via `../../modules/x`; without the `//`, Terragrunt copies only the workflow directory into its run cache and that relative path breaks. This is a common gotcha with any local-module Terragrunt setup, not specific to this repo.
+- Each `include` block sets `expose = true`. Without it, a child unit cannot read `include.root.locals.environment` at all, since Terragrunt does not merge an included config's `locals` into the child's scope unless it is explicitly exposed.
+
+Every leaf here was run through `terragrunt run -- init -backend=false` and `terragrunt run -- validate` for real, plus `terragrunt hcl format --check` and `terragrunt hcl validate` across the whole `live/` tree, the same verification discipline as every other module in this repo.
 
 ---
 
