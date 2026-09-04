@@ -2,12 +2,14 @@
 
 ![Terraform Platform IaC logo](docs/assets/logo.svg)
 
-Infrastructure-as-code across on-premises, AWS, Azure, and GCP. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, Apigee, PrivateLink, S3 tiering, observability, and logging pipelines.
+Infrastructure-as-code across on-premises, AWS, Azure, GCP, AliCloud, and OpenStack. Reusable modules and environment-specific workflows covering EKS, AKS, GKE, ACK, Magnum, Apigee, PrivateLink, S3/OSS/Swift tiering, observability, and logging pipelines.
 
 ![Terraform](https://img.shields.io/badge/Terraform-1.7%2B-7B42BC?logo=terraform&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-EKS%20%7C%20S3%20%7C%20OpenSearch-FF9900?logo=amazon-aws&logoColor=white)
 ![Azure](https://img.shields.io/badge/Azure-AKS%20%7C%20ACR-0089D6?logo=microsoft-azure&logoColor=white)
 ![GCP](https://img.shields.io/badge/GCP-GKE%20%7C%20Apigee%20X-4285F4?logo=google-cloud&logoColor=white)
+![AliCloud](https://img.shields.io/badge/AliCloud-ACK%20%7C%20OSS-FF6A00?logo=alibabacloud&logoColor=white)
+![OpenStack](https://img.shields.io/badge/OpenStack-Magnum%20%7C%20Octavia-ED1944?logo=openstack&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
 <img src="docs/assets/demo.gif" alt="Real terminal recording: terraform fmt -check across every module in this repo, then a trivy IaC security scan (config from trivy.yaml) that actually catches misconfigurations in secure-connectivity" width="820" />
@@ -61,6 +63,22 @@ GCP/
 │   └── gcs_lifecycle/     Standard → Nearline → Coldline → Archive with CMEK
 └── workflows/
     └── deploy_apigee_proxies/ three example API proxies with token auth + path routing
+
+AliCloud/
+├── modules/
+│   ├── ack/               managed CS Kubernetes: RAM node role, tainted batch pool, auto-upgrade window
+│   ├── oss_lifecycle/     Standard → IA → Archive → Cold Archive, KMS, versioning, public access block
+│   └── api_gateway/       throttled API group + app credential fronting backend services
+└── workflows/
+    └── deploy_ack/        ACK cluster + log bucket + internal status API, composed together
+
+OpenStack/
+├── modules/
+│   ├── magnum_k8s/        Magnum-managed Kubernetes: cluster template + cluster, Calico networking
+│   ├── swift_lifecycle/   per-object expiry retention + dedicated versions container
+│   └── octavia_ingress/   HTTPS listener, round-robin pool, active health checks, member registration
+└── workflows/
+    └── deploy_magnum_k8s/ Magnum cluster + Swift backups + Octavia ingress, composed together
 ```
 
 ---
@@ -191,6 +209,46 @@ Three example proxies showing the path-routing and token-auth pattern:
 | device-api | `/device-api/v2` | `/devices`, `/ssh`, `/workspaces`, `/builds` |
 | package-api | `/package-api/v2` | `/packages`, `/download`, `/catalog`, `/releases` |
 | inference-api | `/inference-api/v2` | `/models`, `/inference`, `/benchmarks`, `/compile`, `/profile` |
+
+---
+
+## AliCloud
+
+### `modules/ack`
+
+Managed Container Service for Kubernetes: least-privilege worker RAM role, autoscaling node pools split by workload class (general vs. taint-isolated batch), security-hardened OS images, and a weekly maintenance window instead of ad-hoc master upgrades.
+
+### `modules/oss_lifecycle`
+
+Standard to IA to Archive to Cold Archive tiering, KMS or AES256 encryption, versioning, public access block, and access logging, the OSS equivalent of the AWS `s3_lifecycle` and GCP `gcs_lifecycle` modules.
+
+### `modules/api_gateway`
+
+API group and throttled routes fronting backend services, consolidating per-service auth and rate limiting behind one app credential instead of duplicating it downstream.
+
+### `workflows/deploy_ack`
+
+Composes all three: an ACK cluster with a general pool and a tainted batch pool, an OSS bucket for cluster logs on a short retention schedule, and an internal API Gateway route fronting the cluster's status endpoint.
+
+---
+
+## OpenStack
+
+### `modules/magnum_k8s`
+
+Managed Kubernetes on private OpenStack clouds via Magnum: a cluster template pinning image, flavors, and Calico networking, then a cluster resource built from it so a fleet-wide upgrade is one template change instead of N cluster edits.
+
+### `modules/swift_lifecycle`
+
+Swift has no native storage-class tiering like the hyperscalers, so retention here is enforced through per-object expiry headers set by callers, plus a dedicated versions container so overwritten objects survive until they expire rather than disappearing immediately.
+
+### `modules/octavia_ingress`
+
+Standalone Octavia load balancer with an HTTPS listener, a round-robin backend pool, active health checks, and member registration driven by a map of backend addresses, the OpenStack equivalent of the AWS `nginx_ingress` module.
+
+### `workflows/deploy_magnum_k8s`
+
+Composes all three: a Magnum cluster sized by environment (3 masters in prod, 1 elsewhere), a Swift container for backups, and an Octavia load balancer fronting the cluster's ingress nodes.
 
 ---
 
