@@ -1,46 +1,75 @@
 variable "project_id" {
-  type = string
+  description = "GCP project ID the cluster is created in"
+  type        = string
+
+  validation {
+    condition     = length(var.project_id) > 0
+    error_message = "project_id must not be empty."
+  }
 }
 
 variable "cluster_name" {
-  type = string
+  description = "Name of the GKE cluster and its node service account"
+  type        = string
+
+  validation {
+    condition     = length(var.cluster_name) > 0
+    error_message = "cluster_name must not be empty."
+  }
 }
 
 variable "region" {
-  type    = string
-  default = "us-central1"
+  description = "GCP region for the cluster's control plane and node pools"
+  type        = string
+  default     = "us-central1"
 }
 
 variable "environment" {
-  type = string
+  description = "Deployment environment (e.g. dev, staging, prod); merged into resource labels"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "kubernetes_version" {
-  type    = string
-  default = "latest"
+  description = "Kubernetes minor version to pin the control plane to; \"latest\" tracks the release channel's current default"
+  type        = string
+  default     = "latest"
 }
 
 variable "network" {
-  type    = string
-  default = "default"
+  description = "VPC network the cluster is created in"
+  type        = string
+  default     = "default"
 }
 
 variable "subnetwork" {
-  type = string
+  description = "Subnetwork the cluster's nodes attach to; must have secondary ranges named by pods_range_name and services_range_name"
+  type        = string
+
+  validation {
+    condition     = length(var.subnetwork) > 0
+    error_message = "subnetwork must not be empty."
+  }
 }
 
-# Secondary ranges for pods and services (required for VPC-native clusters)
 variable "pods_range_name" {
-  type    = string
-  default = "pods"
+  description = "Name of the subnetwork's secondary range used for pod alias IPs (VPC-native networking)"
+  type        = string
+  default     = "pods"
 }
 
 variable "services_range_name" {
-  type    = string
-  default = "services"
+  description = "Name of the subnetwork's secondary range used for Service cluster IPs (VPC-native networking)"
+  type        = string
+  default     = "services"
 }
 
 variable "node_pools" {
+  description = "Map of node pool name to its instance sizing, autoscaling bounds, and optional taints"
   type = map(object({
     machine_type  = string
     min_count     = number
@@ -60,25 +89,31 @@ variable "node_pools" {
   default = {}
 }
 
-# Workload Identity -- maps K8s service accounts to GCP service accounts
 variable "workload_identity_enabled" {
-  type    = bool
-  default = true
+  description = "Whether pods can assume GCP service accounts via a Kubernetes service account annotation, instead of node-wide credentials"
+  type        = bool
+  default     = true
 }
 
-# Private cluster -- nodes have no public IPs
 variable "private_cluster" {
-  type    = bool
-  default = true
+  description = "Whether nodes get only private IPs (no direct internet-routable address)"
+  type        = bool
+  default     = true
 }
 
 variable "master_ipv4_cidr_block" {
-  type    = string
-  default = "172.16.0.0/28"
+  description = "CIDR block for the control plane's private endpoint; must be a /28 not overlapping the cluster's other ranges"
+  type        = string
+  default     = "172.16.0.0/28"
+
+  validation {
+    condition     = can(cidrhost(var.master_ipv4_cidr_block, 0))
+    error_message = "master_ipv4_cidr_block must be a valid CIDR block."
+  }
 }
 
-# Authorized networks for master API access
 variable "master_authorized_networks" {
+  description = "CIDR blocks allowed to reach the control plane's API endpoint"
   type = list(object({
     cidr_block   = string
     display_name = string
@@ -87,6 +122,7 @@ variable "master_authorized_networks" {
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource labels merged with the environment and terraform-managed labels"
+  type        = map(string)
+  default     = {}
 }

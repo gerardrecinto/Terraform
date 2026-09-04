@@ -1,28 +1,49 @@
 variable "registry_name" {
-  type = string
+  description = "Globally unique ACR registry name (alphanumeric only, no hyphens)"
+  type        = string
+
+  validation {
+    condition     = length(var.registry_name) > 0
+    error_message = "registry_name must not be empty."
+  }
 }
 
 variable "resource_group_name" {
-  type = string
+  description = "Resource group the registry is created in"
+  type        = string
+
+  validation {
+    condition     = length(var.resource_group_name) > 0
+    error_message = "resource_group_name must not be empty."
+  }
 }
 
 variable "location" {
-  type    = string
-  default = "westus2"
+  description = "Azure region the registry is created in"
+  type        = string
+  default     = "westus2"
 }
 
 variable "environment" {
-  type = string
+  description = "Deployment environment (e.g. dev, staging, prod); merged into resource tags"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "sku" {
-  type    = string
-  default = "Premium" # Premium required for geo-replication and network rules
+  description = "ACR SKU tier; Premium required for geo-replication and network rules"
+  type        = string
+  default     = "Premium" # Premium required for geo-replication and network rules
 }
 
 variable "geo_replication_locations" {
-  type    = list(string)
-  default = []
+  description = "Additional Azure regions to geo-replicate the registry to"
+  type        = list(string)
+  default     = []
 }
 
 variable "allowed_ip_ranges" {
@@ -32,11 +53,13 @@ variable "allowed_ip_ranges" {
 }
 
 variable "enable_retention_policy" {
-  type    = bool
-  default = true
+  description = "Enable the weekly cleanup task that untags images older than the retention window"
+  type        = bool
+  default     = true
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with the environment and terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

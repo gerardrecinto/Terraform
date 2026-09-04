@@ -31,6 +31,8 @@ Commercial angle and consulting hooks: [docs/go-to-market.md](docs/go-to-market.
 
 **Everything version-controlled, nothing click-ops.** IAM roles, Cognito federation, Grafana alert rules, ACR cleanup tasks: all Terraform resources. If it can't be reviewed in a PR and rolled back with a revert, it doesn't exist in production.
 
+**Bad input fails at plan time, not three resources deep in a provider error.** Every one of the 510 input variables across every module and workflow in this repo has a `description`, and the ones with a real constraint (environments, CIDR blocks, retention windows, percentage thresholds, SQS/Log Analytics service limits) have a `validation` block enforcing it. `terraform plan` should tell you `environment must be one of: dev, staging, prod`, not fail an hour later on a resource that silently accepted garbage.
+
 ---
 
 ## Structure
@@ -82,10 +84,13 @@ OpenStack/
     └── deploy_magnum_k8s/ Magnum cluster + Swift backups + Octavia ingress, composed together
 
 live/
-├── root.hcl                          shared locals: cloud/environment derived from the folder path
-├── alicloud/{dev,prod}/ack/          dev + prod units for AliCloud/workflows/deploy_ack
-├── openstack/{dev,prod}/magnum_k8s/  dev + prod units for OpenStack/workflows/deploy_magnum_k8s
-└── gcp/{dev,prod}/apigee_proxies/    dev + prod units for GCP/workflows/deploy_apigee_proxies
+├── root.hcl                                shared locals: cloud/environment derived from the folder path
+├── alicloud/{dev,prod}/ack/                dev + prod units for AliCloud/workflows/deploy_ack
+├── openstack/{dev,prod}/magnum_k8s/        dev + prod units for OpenStack/workflows/deploy_magnum_k8s
+├── gcp/{dev,prod}/apigee_proxies/          dev + prod units for GCP/workflows/deploy_apigee_proxies
+├── aws/{dev,prod}/blue_green_eks/          dev + prod units for AWS/workflows/blue_green_eks
+├── aws/{dev,prod}/opensearch_migration/    dev + prod units for AWS/workflows/opensearch_migration
+└── azure/{dev,prod}/aks_logging/           dev + prod units for Azure/workflows/deploy_aks_logging
 ```
 
 ---
@@ -261,14 +266,17 @@ Composes all three: a Magnum cluster sized by environment (3 masters in prod, 1 
 
 ## Terragrunt
 
-The `workflows/` directories above are plain Terraform root modules: each one is runnable on its own with its own `terraform init`. `live/` is a thin Terragrunt layer on top of a few of them, for the actual reason teams reach for Terragrunt: running the same workflow for more than one environment without copy-pasting the whole module tree per environment.
+The `workflows/` directories above are plain Terraform root modules: each one is runnable on its own with its own `terraform init`. `live/` is a thin Terragrunt layer on top of six of them, for the actual reason teams reach for Terragrunt: running the same workflow for more than one environment without copy-pasting the whole module tree per environment.
 
 ```
 live/
-├── root.hcl                          shared locals: derives cloud/environment from the folder path
-├── alicloud/{dev,prod}/ack/          both point at AliCloud/workflows/deploy_ack
-├── openstack/{dev,prod}/magnum_k8s/  both point at OpenStack/workflows/deploy_magnum_k8s
-└── gcp/{dev,prod}/apigee_proxies/    both point at GCP/workflows/deploy_apigee_proxies
+├── root.hcl                                shared locals: derives cloud/environment from the folder path
+├── alicloud/{dev,prod}/ack/                both point at AliCloud/workflows/deploy_ack
+├── openstack/{dev,prod}/magnum_k8s/        both point at OpenStack/workflows/deploy_magnum_k8s
+├── gcp/{dev,prod}/apigee_proxies/          both point at GCP/workflows/deploy_apigee_proxies
+├── aws/{dev,prod}/blue_green_eks/          both point at AWS/workflows/blue_green_eks
+├── aws/{dev,prod}/opensearch_migration/    both point at AWS/workflows/opensearch_migration
+└── azure/{dev,prod}/aks_logging/           both point at Azure/workflows/deploy_aks_logging
 ```
 
 Each leaf `terragrunt.hcl` is a handful of lines: an `include` of `root.hcl`, a `terraform.source` pointing at the workflow, and an `inputs` block with that environment's values (smaller node counts and single-AZ networking in dev, multi-AZ and real capacity in prod). `root.hcl` derives `environment` from the directory path itself (`path_relative_to_include()`), so it is never typed twice: get it from the folder you're standing in, not a variable a future edit can forget to change.

@@ -1,5 +1,11 @@
 variable "project_id" {
-  type = string
+  description = "GCP project ID the Apigee organization and its runtime resources are provisioned in"
+  type        = string
+
+  validation {
+    condition     = length(var.project_id) > 0
+    error_message = "project_id must not be empty."
+  }
 }
 
 variable "org_id" {
@@ -8,59 +14,69 @@ variable "org_id" {
 }
 
 variable "environment" {
-  type = string
+  description = "Deployment environment (e.g. dev, staging, prod); merged into resource tags"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "region" {
-  type    = string
-  default = "us-central1"
+  description = "GCP region for the Apigee instance and its VPC peering range"
+  type        = string
+  default     = "us-central1"
 }
 
-# Apigee environment name (e.g., "prod", "dev")
 variable "apigee_env_name" {
-  type = string
+  description = "Apigee environment name (e.g. \"prod\", \"dev\") that proxies are deployed into"
+  type        = string
 }
 
-# Apigee environment group hostname (external-facing)
 variable "apigee_env_group_hostname" {
-  type = string
-  # e.g., "api.example.com"
+  description = "External-facing hostname routed to this Apigee environment group (e.g. \"api.example.com\")"
+  type        = string
 }
 
-# API proxies to deploy -- each becomes one Apigee API proxy
 variable "api_proxies" {
-  description = "Map of proxy name to its config"
+  description = "Map of proxy name to its config; each entry becomes one Apigee API proxy. token_auth_enabled validates the Bearer token via a JS policy before forwarding, path_routes maps a path prefix to a backend URL override"
   type = map(object({
-    display_name = string
-    description  = string
-    base_path    = string
-    target_url   = string
-    # token_auth: validates Bearer token via JS policy before forwarding
+    display_name       = string
+    description        = string
+    base_path          = string
+    target_url         = string
     token_auth_enabled = bool
-    # path_routing: map of path prefix -> backend URL override
-    path_routes = map(string)
+    path_routes        = map(string)
   }))
   default = {}
 }
 
-# OAuth2 / API key validation endpoint (used in JS token auth policy)
 variable "token_validation_url" {
-  type    = string
-  default = ""
+  description = "OAuth2/API key introspection endpoint used by the JS token-auth policy; required when any proxy has token_auth_enabled"
+  type        = string
+  default     = ""
 }
 
 variable "vpc_network_name" {
-  type    = string
-  default = "default"
+  description = "VPC network the Apigee managed instance peers with"
+  type        = string
+  default     = "default"
 }
 
 variable "vpc_peering_cidr" {
   description = "CIDR range for Apigee managed VPC peering"
   type        = string
   default     = "10.0.0.0/22"
+
+  validation {
+    condition     = can(cidrhost(var.vpc_peering_cidr, 0))
+    error_message = "vpc_peering_cidr must be a valid CIDR block."
+  }
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with the environment and terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

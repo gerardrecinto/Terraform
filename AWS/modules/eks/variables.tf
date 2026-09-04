@@ -1,48 +1,75 @@
 variable "cluster_name" {
-  type = string
+  description = "Name of the EKS cluster"
+  type        = string
+
+  validation {
+    condition     = length(var.cluster_name) > 0
+    error_message = "cluster_name must not be empty."
+  }
 }
 
 variable "cluster_version" {
-  type    = string
-  default = "1.31"
+  description = "Kubernetes minor version for the EKS control plane"
+  type        = string
+  default     = "1.31"
 }
 
 variable "vpc_id" {
-  type = string
+  description = "VPC the cluster's control plane ENIs and node groups are provisioned in"
+  type        = string
+
+  validation {
+    condition     = length(var.vpc_id) > 0
+    error_message = "vpc_id must not be empty."
+  }
 }
 
 variable "subnet_ids" {
-  type = list(string)
+  description = "Subnet IDs the control plane and node groups attach to; must span at least two availability zones"
+  type        = list(string)
+
+  validation {
+    condition     = length(var.subnet_ids) >= 2
+    error_message = "subnet_ids must contain at least two subnets across separate availability zones."
+  }
 }
 
 variable "environment" {
-  type = string
+  description = "Deployment environment (e.g. dev, staging, prod); merged into resource tags"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "aws_region" {
-  type    = string
-  default = "us-west-2"
+  description = "AWS region the cluster is provisioned in"
+  type        = string
+  default     = "us-west-2"
 }
 
-# OIDC IDP for federated auth (Azure AD, Okta, etc.)
 variable "oidc_issuer_url" {
-  type    = string
-  default = ""
+  description = "OIDC IDP issuer URL for federated auth (Azure AD, Okta, etc.); empty string skips federated auth setup"
+  type        = string
+  default     = ""
 }
 
-# CNI custom networking -- 100-series subnets to avoid exhaustion in large clusters
 variable "cni_custom_networking_enabled" {
-  type    = bool
-  default = true
+  description = "CNI custom networking -- 100-series subnets to avoid IP exhaustion in large clusters"
+  type        = bool
+  default     = true
 }
 
 variable "eni_config_subnets" {
-  description = "Secondary subnets for VPC CNI eniconfigs (100.x.x.x range)"
+  description = "Secondary subnets for VPC CNI eniconfigs (100.x.x.x range), keyed by availability zone"
   type        = map(string) # az -> subnet_id
   default     = {}
 }
 
 variable "linux_node_groups" {
+  description = "Map of Linux node group name to its instance types, autoscaling bounds, capacity type (ON_DEMAND or SPOT), labels, and taints"
   type = map(object({
     instance_types = list(string)
     min_size       = number
@@ -56,6 +83,7 @@ variable "linux_node_groups" {
 }
 
 variable "windows_node_groups" {
+  description = "Map of Windows node group name to its instance types and autoscaling bounds"
   type = map(object({
     instance_types = list(string)
     min_size       = number
@@ -66,6 +94,7 @@ variable "windows_node_groups" {
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with the environment and terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

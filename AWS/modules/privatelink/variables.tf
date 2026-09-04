@@ -4,7 +4,13 @@ variable "service_name" {
 }
 
 variable "vpc_id" {
-  type = string
+  description = "VPC the endpoint service's NLB and consumer endpoint (when created) live in"
+  type        = string
+
+  validation {
+    condition     = length(var.vpc_id) > 0
+    error_message = "vpc_id must not be empty."
+  }
 }
 
 variable "subnet_ids" {
@@ -29,17 +35,29 @@ variable "nlb_arn" {
   type        = string
 }
 
-# SSH/WebSocket TCP passthrough ports (e.g., 22, 443)
 variable "tcp_ports" {
-  type    = list(number)
-  default = [22, 443]
+  description = "SSH/WebSocket TCP passthrough ports the endpoint service forwards (e.g., 22, 443)"
+  type        = list(number)
+  default     = [22, 443]
+
+  validation {
+    condition     = length(var.tcp_ports) > 0
+    error_message = "tcp_ports must contain at least one port."
+  }
 }
 
 variable "environment" {
-  type = string
+  description = "Deployment environment (e.g. dev, staging, prod); merged into resource tags"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with the environment and terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

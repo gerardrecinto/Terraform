@@ -4,15 +4,18 @@ variable "name" {
 }
 
 variable "location" {
-  type = string
+  description = "Azure region the Key Vault is created in"
+  type        = string
 }
 
 variable "resource_group_name" {
-  type = string
+  description = "Resource group the Key Vault is created in"
+  type        = string
 }
 
 variable "private_endpoint_subnet_id" {
-  type = string
+  description = "Subnet the vault's private endpoint NIC attaches to"
+  type        = string
 }
 
 variable "private_dns_zone_id" {
@@ -21,35 +24,42 @@ variable "private_dns_zone_id" {
 }
 
 variable "log_analytics_workspace_id" {
-  type = string
+  description = "Log Analytics workspace ID vault diagnostic logs (secret access, etc.) are sent to"
+  type        = string
 }
 
 variable "allowed_subnet_ids" {
-  type    = list(string)
-  default = []
+  description = "Subnet IDs allowed through the vault's network ACL, in addition to the private endpoint"
+  type        = list(string)
+  default     = []
 }
 
 variable "allowed_ip_ranges" {
-  type    = list(string)
-  default = []
+  description = "Public CIDR ranges allowed through the vault's network ACL"
+  type        = list(string)
+  default     = []
 }
 
 variable "grant_deployer_admin" {
-  type    = bool
-  default = false
+  description = "Grant the identity running terraform full admin access to secrets/keys/certificates, needed the first time a vault is created before officer/reader roles exist"
+  type        = bool
+  default     = false
 }
 
 variable "reader_principal_ids" {
-  type    = list(string)
-  default = []
+  description = "Principal IDs granted read-only access to secrets, keys, and certificates"
+  type        = list(string)
+  default     = []
 }
 
 variable "officer_principal_ids" {
-  type    = list(string)
-  default = []
+  description = "Principal IDs granted full manage access to secrets, keys, and certificates"
+  type        = list(string)
+  default     = []
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

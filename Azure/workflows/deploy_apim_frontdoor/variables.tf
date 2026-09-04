@@ -1,78 +1,116 @@
 variable "subscription_id" {
-  type = string
+  description = "Azure subscription ID the APIM instance and Front Door profile are provisioned in"
+  type        = string
+
+  validation {
+    condition     = length(var.subscription_id) > 0
+    error_message = "subscription_id must not be empty."
+  }
 }
 
 variable "prefix" {
-  type    = string
-  default = "PLACEHOLDER_PREFIX"
+  description = "Naming prefix applied to resources this workflow creates besides the APIM/Front Door names"
+  type        = string
+  default     = "PLACEHOLDER_PREFIX"
 }
 
 variable "location" {
-  type    = string
-  default = "PLACEHOLDER_AZURE_REGION"
+  description = "Azure region the APIM instance is created in"
+  type        = string
+  default     = "PLACEHOLDER_AZURE_REGION"
 }
 
 variable "networking_resource_group" {
-  type = string
+  description = "Resource group containing the VNet APIM's subnet lives in"
+  type        = string
 }
 
 variable "apim_vnet_name" {
-  type = string
+  description = "VNet containing the subnet APIM is injected into"
+  type        = string
 }
 
 variable "apim_subnet_name" {
-  type = string
+  description = "Dedicated /27+ subnet for APIM within apim_vnet_name"
+  type        = string
 }
 
 variable "dns_resource_group" {
-  type = string
+  description = "Resource group containing the private DNS zone used for Key Vault private endpoint resolution"
+  type        = string
 }
 
 variable "keyvault_name" {
-  type = string
+  description = "Key Vault name (3-24 chars, globally unique) APIM pulls named values from"
+  type        = string
 }
 
 variable "apim_name" {
-  type = string
+  description = "APIM service name (globally unique)"
+  type        = string
 }
 
 variable "publisher_name" {
-  type = string
+  description = "Publisher organization name shown in the APIM developer portal"
+  type        = string
 }
 
 variable "publisher_email" {
-  type = string
+  description = "Publisher notification email address for APIM system alerts"
+  type        = string
 }
 
 variable "apim_sku_tier" {
-  type    = string
-  default = "Developer"
+  description = "APIM SKU tier: Developer or Premium. Premium required for multi-region and zone redundancy"
+  type        = string
+  default     = "Developer"
+
+  validation {
+    condition     = contains(["Developer", "Premium"], var.apim_sku_tier)
+    error_message = "apim_sku_tier must be either Developer or Premium."
+  }
 }
 
 variable "apim_sku_capacity" {
-  type    = number
-  default = 1
+  description = "Number of scale units for the chosen SKU tier"
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.apim_sku_capacity > 0
+    error_message = "apim_sku_capacity must be greater than zero."
+  }
 }
 
 variable "apim_hostname" {
-  type = string
+  description = "APIM gateway hostname (internal FQDN) used as origin host header by Front Door"
+  type        = string
 }
 
 variable "jwt_tenant_id" {
-  type    = string
-  default = "PLACEHOLDER_TENANT_ID"
+  description = "Azure AD tenant ID the inbound JWT validation policy checks tokens against"
+  type        = string
+  default     = "PLACEHOLDER_TENANT_ID"
 }
 
 variable "jwt_audience" {
-  type = string
+  description = "Expected audience (aud) claim the inbound JWT validation policy checks tokens against"
+  type        = string
 }
 
 variable "waf_mode" {
-  type    = string
-  default = "Prevention"
+  description = "Front Door WAF policy mode: Detection or Prevention"
+  type        = string
+  default     = "Prevention"
+
+  validation {
+    condition     = contains(["Detection", "Prevention"], var.waf_mode)
+    error_message = "waf_mode must be either Detection or Prevention."
+  }
 }
 
 variable "alert_email_receivers" {
+  description = "Email addresses notified when a monitoring alert fires"
   type = list(object({
     name    = string
     address = string
@@ -81,12 +119,19 @@ variable "alert_email_receivers" {
 }
 
 variable "log_retention_days" {
-  type    = number
-  default = 90
+  description = "Days Log Analytics retains ingested logs; Azure allows 30 to 730"
+  type        = number
+  default     = 90
+
+  validation {
+    condition     = var.log_retention_days >= 30 && var.log_retention_days <= 730
+    error_message = "log_retention_days must be between 30 and 730."
+  }
 }
 
 variable "tags" {
-  type = map(string)
+  description = "Additional resource tags merged with terraform-managed tags"
+  type        = map(string)
   default = {
     managed-by  = "terraform"
     environment = "PLACEHOLDER_ENV"

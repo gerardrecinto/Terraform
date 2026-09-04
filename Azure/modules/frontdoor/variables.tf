@@ -1,19 +1,27 @@
 variable "prefix" {
-  type = string
+  description = "Naming prefix applied to the Front Door profile, endpoint, and WAF policy"
+  type        = string
 }
 
 variable "location" {
-  type = string
+  description = "Azure region used for the WAF policy resource (Front Door itself is global)"
+  type        = string
 }
 
 variable "resource_group_name" {
-  type = string
+  description = "Resource group the Front Door profile and WAF policy are created in"
+  type        = string
 }
 
 variable "waf_mode" {
   type        = string
   default     = "Prevention"
   description = "Detection or Prevention."
+
+  validation {
+    condition     = contains(["Detection", "Prevention"], var.waf_mode)
+    error_message = "waf_mode must be either Detection or Prevention."
+  }
 }
 
 variable "apim_id" {
@@ -27,6 +35,7 @@ variable "apim_hostname" {
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

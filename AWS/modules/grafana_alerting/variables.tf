@@ -1,5 +1,11 @@
 variable "grafana_url" {
-  type = string
+  description = "Base URL of the Grafana instance the alert rules and contact points are created in"
+  type        = string
+
+  validation {
+    condition     = length(var.grafana_url) > 0
+    error_message = "grafana_url must not be empty."
+  }
 }
 
 variable "grafana_auth" {
@@ -9,17 +15,24 @@ variable "grafana_auth" {
 }
 
 variable "environment" {
-  type = string
+  description = "Deployment environment (e.g. dev, staging, prod); merged into resource tags and alert naming"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "aws_region" {
-  type    = string
-  default = "us-west-2"
+  description = "AWS region the monitored CloudWatch data source queries"
+  type        = string
+  default     = "us-west-2"
 }
 
-# ALB ARN suffixes to monitor (up to 10 per resume)
 variable "alb_arn_suffixes" {
-  type = list(string)
+  description = "ALB ARN suffixes to monitor (up to 10 per resume)"
+  type        = list(string)
 }
 
 variable "alb_names" {
@@ -27,59 +40,78 @@ variable "alb_names" {
   type        = list(string)
 }
 
-# MSK cluster name
 variable "msk_cluster_name" {
-  type    = string
-  default = ""
+  description = "MSK cluster name to monitor; empty string skips MSK alerting"
+  type        = string
+  default     = ""
 }
 
-# SQS queue names to monitor
 variable "sqs_queue_names" {
-  type    = list(string)
-  default = []
+  description = "SQS queue names to monitor for message age"
+  type        = list(string)
+  default     = []
 }
 
-# SNS topic ARNs to monitor
 variable "sns_topic_arns" {
-  type    = list(string)
-  default = []
+  description = "SNS topic ARNs to monitor"
+  type        = list(string)
+  default     = []
 }
 
-# PrivateLink endpoint service IDs to monitor
 variable "privatelink_endpoint_service_ids" {
-  type    = list(string)
-  default = []
+  description = "PrivateLink endpoint service IDs to monitor"
+  type        = list(string)
+  default     = []
 }
 
-# Slack webhook for alert notifications
 variable "slack_webhook_url" {
-  type      = string
-  sensitive = true
-  default   = ""
+  description = "Slack webhook for alert notifications; empty string skips the Slack contact point"
+  type        = string
+  sensitive   = true
+  default     = ""
 }
 
 variable "alert_email" {
-  type    = string
-  default = ""
+  description = "Email address alert notifications are sent to; empty string skips the email contact point"
+  type        = string
+  default     = ""
 }
 
-# Thresholds
 variable "alb_5xx_threshold" {
-  type    = number
-  default = 10
+  description = "Number of 5XX responses per evaluation window that triggers the ALB error-rate alert"
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.alb_5xx_threshold > 0
+    error_message = "alb_5xx_threshold must be greater than zero."
+  }
 }
 
 variable "alb_latency_p99_ms" {
-  type    = number
-  default = 2000
+  description = "P99 latency in milliseconds that triggers the ALB latency alert"
+  type        = number
+  default     = 2000
+
+  validation {
+    condition     = var.alb_latency_p99_ms > 0
+    error_message = "alb_latency_p99_ms must be greater than zero."
+  }
 }
 
 variable "sqs_message_age_seconds" {
-  type    = number
-  default = 300
+  description = "Oldest message age in seconds that triggers the SQS backlog alert"
+  type        = number
+  default     = 300
+
+  validation {
+    condition     = var.sqs_message_age_seconds > 0
+    error_message = "sqs_message_age_seconds must be greater than zero."
+  }
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with the environment and terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

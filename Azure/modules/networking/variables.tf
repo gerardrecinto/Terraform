@@ -1,13 +1,16 @@
 variable "prefix" {
-  type = string
+  description = "Naming prefix applied to the hub VNet and its subnets"
+  type        = string
 }
 
 variable "location" {
-  type = string
+  description = "Azure region the hub network is created in"
+  type        = string
 }
 
 variable "resource_group_name" {
-  type = string
+  description = "Resource group the hub network is created in"
+  type        = string
 }
 
 variable "hub_address_space" {
@@ -21,7 +24,8 @@ variable "firewall_subnet_prefix" {
 }
 
 variable "gateway_subnet_prefix" {
-  type = string
+  description = "CIDR for the GatewaySubnet, reserved for a future VPN/ExpressRoute gateway"
+  type        = string
 }
 
 variable "bastion_subnet_prefix" {
@@ -30,13 +34,15 @@ variable "bastion_subnet_prefix" {
 }
 
 variable "availability_zones" {
-  type    = list(string)
-  default = ["1", "2", "3"]
+  description = "Availability zones zone-redundant hub resources (firewall, gateway) are spread across"
+  type        = list(string)
+  default     = ["1", "2", "3"]
 }
 
 variable "dns_servers" {
-  type    = list(string)
-  default = []
+  description = "Custom DNS servers for the hub VNet; empty list uses Azure-provided DNS"
+  type        = list(string)
+  default     = []
 }
 
 variable "spokes" {
@@ -53,11 +59,13 @@ variable "gateway_deployed" {
 }
 
 variable "deploy_bastion" {
-  type    = bool
-  default = true
+  description = "Deploy Azure Bastion in the hub for browser-based VM access without public IPs"
+  type        = bool
+  default     = true
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

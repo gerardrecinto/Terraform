@@ -1,21 +1,31 @@
 variable "prefix" {
-  type = string
+  description = "Naming prefix applied to the Log Analytics workspace, action group, and alert rules"
+  type        = string
 }
 
 variable "location" {
-  type = string
+  description = "Azure region the monitoring resources are created in"
+  type        = string
 }
 
 variable "resource_group_name" {
-  type = string
+  description = "Resource group the monitoring resources are created in"
+  type        = string
 }
 
 variable "log_retention_days" {
-  type    = number
-  default = 90
+  description = "Days Log Analytics retains ingested logs; Azure allows 30 to 730"
+  type        = number
+  default     = 90
+
+  validation {
+    condition     = var.log_retention_days >= 30 && var.log_retention_days <= 730
+    error_message = "log_retention_days must be between 30 and 730."
+  }
 }
 
 variable "alert_email_receivers" {
+  description = "Email addresses the action group notifies when an alert fires"
   type = list(object({
     name    = string
     address = string
@@ -24,6 +34,7 @@ variable "alert_email_receivers" {
 }
 
 variable "alert_webhook_receivers" {
+  description = "Webhook URIs the action group notifies when an alert fires"
   type = list(object({
     name = string
     uri  = string
@@ -32,26 +43,41 @@ variable "alert_webhook_receivers" {
 }
 
 variable "aks_cluster_id" {
-  type    = string
-  default = ""
+  description = "AKS cluster resource ID to monitor for CPU usage; empty string skips AKS alerting"
+  type        = string
+  default     = ""
 }
 
 variable "aks_cpu_threshold_percent" {
-  type    = number
-  default = 85
+  description = "Cluster average CPU percentage that triggers the AKS CPU alert"
+  type        = number
+  default     = 85
+
+  validation {
+    condition     = var.aks_cpu_threshold_percent > 0 && var.aks_cpu_threshold_percent <= 100
+    error_message = "aks_cpu_threshold_percent must be between 1 and 100."
+  }
 }
 
 variable "servicebus_namespace_id" {
-  type    = string
-  default = ""
+  description = "Service Bus namespace resource ID to monitor for dead-letter queue depth; empty string skips Service Bus alerting"
+  type        = string
+  default     = ""
 }
 
 variable "sb_dlq_threshold" {
-  type    = number
-  default = 10
+  description = "Number of dead-lettered messages that triggers the Service Bus DLQ alert"
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.sb_dlq_threshold > 0
+    error_message = "sb_dlq_threshold must be greater than zero."
+  }
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }

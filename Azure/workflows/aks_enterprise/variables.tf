@@ -1,20 +1,29 @@
 variable "subscription_id" {
-  type = string
+  description = "Azure subscription ID the AKS cluster and its supporting resources are provisioned in"
+  type        = string
+
+  validation {
+    condition     = length(var.subscription_id) > 0
+    error_message = "subscription_id must not be empty."
+  }
 }
 
 variable "prefix" {
-  type    = string
-  default = "PLACEHOLDER_PREFIX"
+  description = "Naming prefix applied to the AKS cluster and its node pools"
+  type        = string
+  default     = "PLACEHOLDER_PREFIX"
 }
 
 variable "location" {
-  type    = string
-  default = "PLACEHOLDER_AZURE_REGION"
+  description = "Azure region the AKS cluster is created in"
+  type        = string
+  default     = "PLACEHOLDER_AZURE_REGION"
 }
 
 variable "kubernetes_version" {
-  type    = string
-  default = "1.29"
+  description = "Kubernetes minor version for the AKS control plane and node pools"
+  type        = string
+  default     = "1.29"
 }
 
 variable "networking_resource_group" {
@@ -23,78 +32,109 @@ variable "networking_resource_group" {
 }
 
 variable "aks_vnet_name" {
-  type = string
+  description = "Name of the spoke VNet the cluster's nodes and pods attach to"
+  type        = string
 }
 
 variable "aks_nodes_subnet_name" {
-  type = string
+  description = "Subnet within aks_vnet_name that cluster nodes attach to"
+  type        = string
 }
 
 variable "aks_pods_subnet_name" {
-  type = string
+  description = "Subnet within aks_vnet_name that pods attach to (Azure CNI pod subnet)"
+  type        = string
 }
 
 variable "log_analytics_workspace_id" {
-  type = string
+  description = "Log Analytics workspace ID for Container Insights"
+  type        = string
 }
 
 variable "pod_cidr" {
-  type    = string
-  default = "PLACEHOLDER_POD_CIDR"
+  description = "CIDR block for pod IPs when not using Azure CNI pod subnets"
+  type        = string
+  default     = "PLACEHOLDER_POD_CIDR"
 }
 
 variable "service_cidr" {
-  type    = string
-  default = "PLACEHOLDER_SVC_CIDR"
+  description = "CIDR block for Kubernetes Service cluster IPs; must not overlap the VNet's address space"
+  type        = string
+  default     = "PLACEHOLDER_SVC_CIDR"
 }
 
 variable "dns_service_ip" {
-  type    = string
-  default = "PLACEHOLDER_DNS_SVC_IP"
+  description = "IP address within service_cidr reserved for the cluster's DNS service"
+  type        = string
+  default     = "PLACEHOLDER_DNS_SVC_IP"
 }
 
 variable "system_pool_vm_size" {
-  type    = string
-  default = "Standard_D4ds_v5"
+  description = "VM size for the system node pool"
+  type        = string
+  default     = "Standard_D4ds_v5"
 }
 
 variable "system_pool_node_count" {
-  type    = number
-  default = 3
+  description = "Fixed node count for the system node pool"
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.system_pool_node_count > 0
+    error_message = "system_pool_node_count must be greater than zero."
+  }
 }
 
 variable "workload_pool_vm_size" {
-  type    = string
-  default = "Standard_D8ds_v5"
+  description = "VM size for the general workload node pool"
+  type        = string
+  default     = "Standard_D8ds_v5"
 }
 
 variable "workload_pool_node_count" {
-  type    = number
-  default = 3
+  description = "Fixed node count for the general workload node pool"
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.workload_pool_node_count > 0
+    error_message = "workload_pool_node_count must be greater than zero."
+  }
 }
 
 variable "deploy_spot_pool" {
-  type    = bool
-  default = false
+  description = "Deploy an additional Spot-priority node pool for interruptible, cost-optimized workloads"
+  type        = bool
+  default     = false
 }
 
 variable "spot_pool_vm_size" {
-  type    = string
-  default = "Standard_D8ds_v5"
+  description = "VM size for the Spot node pool; used only when deploy_spot_pool is true"
+  type        = string
+  default     = "Standard_D8ds_v5"
 }
 
 variable "spot_pool_max_count" {
-  type    = number
-  default = 10
+  description = "Maximum autoscaled node count for the Spot node pool"
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.spot_pool_max_count > 0
+    error_message = "spot_pool_max_count must be greater than zero."
+  }
 }
 
 variable "availability_zones" {
-  type    = list(string)
-  default = ["1", "2", "3"]
+  description = "Availability zones node pools are spread across"
+  type        = list(string)
+  default     = ["1", "2", "3"]
 }
 
 variable "tags" {
-  type = map(string)
+  description = "Additional resource tags merged with terraform-managed tags"
+  type        = map(string)
   default = {
     managed-by  = "terraform"
     environment = "PLACEHOLDER_ENV"

@@ -4,23 +4,28 @@ variable "name" {
 }
 
 variable "prefix" {
-  type = string
+  description = "Naming prefix applied to resources this module creates besides the APIM service itself"
+  type        = string
 }
 
 variable "location" {
-  type = string
+  description = "Azure region the APIM instance is created in"
+  type        = string
 }
 
 variable "resource_group_name" {
-  type = string
+  description = "Resource group the APIM instance is created in"
+  type        = string
 }
 
 variable "publisher_name" {
-  type = string
+  description = "Publisher organization name shown in the APIM developer portal"
+  type        = string
 }
 
 variable "publisher_email" {
-  type = string
+  description = "Publisher notification email address for APIM system alerts"
+  type        = string
 }
 
 variable "sku_tier" {
@@ -30,8 +35,14 @@ variable "sku_tier" {
 }
 
 variable "sku_capacity" {
-  type    = number
-  default = 1
+  description = "Number of scale units for the chosen SKU tier"
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.sku_capacity > 0
+    error_message = "sku_capacity must be greater than zero."
+  }
 }
 
 variable "apim_subnet_id" {
@@ -40,8 +51,9 @@ variable "apim_subnet_id" {
 }
 
 variable "key_vault_id" {
-  type    = string
-  default = ""
+  description = "Key Vault resource ID APIM's system identity is granted access to; empty string skips Key Vault integration"
+  type        = string
+  default     = ""
 }
 
 variable "key_vault_named_values" {
@@ -53,18 +65,22 @@ variable "key_vault_named_values" {
 }
 
 variable "jwt_tenant_id" {
-  type = string
+  description = "Azure AD tenant ID the inbound JWT validation policy checks tokens against"
+  type        = string
 }
 
 variable "jwt_audience" {
-  type = string
+  description = "Expected audience (aud) claim the inbound JWT validation policy checks tokens against"
+  type        = string
 }
 
 variable "log_analytics_workspace_id" {
-  type = string
+  description = "Log Analytics workspace ID APIM diagnostic logs are sent to"
+  type        = string
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional resource tags merged with terraform-managed tags"
+  type        = map(string)
+  default     = {}
 }
